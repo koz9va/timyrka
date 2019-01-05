@@ -6,7 +6,7 @@ def hello(bot, update):
     update.message.reply_text(
         'Hello {}'.format(update.message.from_user.first_name)
     )
-updater = Updater('771027063:AAH1YYBGAL37CpHU5vKUv4WAaGzsixg00yQ')
+updater = Updater('APIKEY')
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 
