@@ -31,8 +31,9 @@ def pubg(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text='Текущий онлайн в PUBG: ' + str(model.getAmount()))
 
 def joke(bot, update):
-    joke = BeautifulSoup(requests.get('http://freegenerator.ru/shutok').text, features="html.parser").find( 'a',class_='item_bg').contents[0]
-    bot.sendMessage(chat_id=update.message.chat_id, text='ШУТКА '  + str(joke))
+    soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
+    joke = soup.find(class_="text").contents[0].contents[0].contents[0]
+    bot.sendMessage(chat_id=update.message.chat_id, text=str(joke))
 
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
