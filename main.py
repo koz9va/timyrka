@@ -18,9 +18,9 @@ class Model(): # класс в котором храннятся все данн
     def getAmount(self):
         return self.pubg_site
     def updbtc(self):
-        self.btcusd = BeautifulSoup(requests.get('https://altstake.io').text, features="html.parser").find_all('strong', class_='down')[0].contents[0]    
+        self.btcusd = BeautifulSoup(requests.get('https://altstake.io').text, features="html.parser").find_all('strong', class_='down')[0].contents[0]
     def getAmountBTC(self):
-        return self.btcusd    
+        return self.btcusd
 
 model = Model() # создаём модель
 
@@ -35,11 +35,13 @@ def pubg(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text='Текущий онлайн в PUBG: ' + str(model.getAmount()))
 
 def joke(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text='Ебанная шутка')
+    soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
+    joke = soup.find(class_="text").contents[0].contents[0].contents[0]
+    bot.sendMessage(chat_id=update.message.chat_id, text=str(joke))
 
 def btc(bot, update):
     round(getAmountBTC, 2)
-    bot.sendMessage(chat_id=update.message.chat_id, text='BTC/USD: ' + str(model.getAmountBTC()))    
+    bot.sendMessage(chat_id=update.message.chat_id, text='BTC/USD: ' + str(model.getAmountBTC()))
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('pubg', pubg))
