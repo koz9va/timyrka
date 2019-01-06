@@ -30,8 +30,8 @@ updater = Updater('771027063:AAHjnTSc5uH5BapuPAHsHwuKiN7VaQludzc') # токен 
 def pubg(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text='Текущий онлайн в PUBG: ' + str(model.getAmount()))
 
-def joke(joke, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text='Ебанная шутка')    
+def joke(bot, update):
+    bot.sendMessage(chat_id=update.message.chat_id, text='Ебанная шутка')
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('pubg', pubg))
