@@ -9,7 +9,7 @@ class Model(): # класс в котором храннятся все данн
     timer = int()
     # в следующей строке делаем запрос на сайт с количеством игроков и скрапим его через beautiful soup
     pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
-    btcusd = BeautifulSoup(requests.get('https://prometheus.ru/coins/btc/').text, features="html.parser").find_all('span', class_='currency-value rc-PRICE-BTC', id='js-table-coin-value')[0].contents[0]
+    btcusd = BeautifulSoup(requests.get('https://altstake.io').text, features="html.parser").find_all('strong', class_='down')[0].contents[0]
     helloFile = open('hello.txt', 'r')
     hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
     helloFile.close()
@@ -18,7 +18,7 @@ class Model(): # класс в котором храннятся все данн
     def getAmount(self):
         return self.pubg_site
     def updbtc(self):
-        self.btcusd = BeautifulSoup(requests.get('https://prometheus.ru/coins/btc/').text, features="html.parser").find_all('span', class_='currency-value rc-PRICE-BTC', id='js-table-coin-value')[0].contents[0]    
+        self.btcusd = BeautifulSoup(requests.get('https://altstake.io').text, features="html.parser").find_all('strong', class_='down')[0].contents[0]    
     def getAmountBTC(self):
         return self.btcusd    
 
@@ -38,7 +38,8 @@ def joke(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text='Ебанная шутка')
 
 def btc(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text='BTC/USD: ' + str(model.getAmountBTC()) + '$')    
+    round(getAmountBTC, 2)
+    bot.sendMessage(chat_id=update.message.chat_id, text='BTC/USD: ' + str(model.getAmountBTC()))    
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('pubg', pubg))
