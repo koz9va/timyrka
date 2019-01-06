@@ -17,16 +17,16 @@ class Model(): # класс в котором храннятся все данн
     def getAmount(self):
         return self.pubg_site
 
-class Joke(): # класс в котором храннятся все данные которые мы передаём пользователям
-    # в следующей строке делаем запрос на сайт с количеством игроков и скрапим его через beautiful soup
-    pubg = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
-    def get(self):
-        return self.pubg
+# class Joke(): # класс в котором храннятся все данные которые мы передаём пользователям
+#     # в следующей строке делаем запрос на сайт с количеством игроков и скрапим его через beautiful soup
+#     pubg = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
+#     def get(self):
+#         return self.pubg
 
 
 
 model = Model() # создаём модель
-joke = Joke()
+# joke = Joke()
 
 
 def hello(bot, update):
