@@ -40,7 +40,6 @@ def joke(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text=str(joke))
 
 def btc(bot, update):
-    round(getAmountBTC, 2)
     bot.sendMessage(chat_id=update.message.chat_id, text='BTC/USD: ' + str(model.getAmountBTC()))
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
