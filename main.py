@@ -15,14 +15,14 @@ class Model():
 
 model = Model()
 
-
 def hello(bot, update):
     update.message.reply_text(
-        'Hello {}'.format(update.message.from_user.first_name)
+        'Привет, {}!'.format(update.message.from_user.first_name)
     )
-updater = Updater('APIKEY')
+    bot.sendMessage(chat_id=update.message.chat_id, text='Я бот-долбобот и пока что тупой как пробка')
+updater = Updater('TOKEN')
 def pubg(bot, update):
-    update.message.reply_text(str(model.getAmount()))
+    bot.sendMessage(chat_id=update.message.chat_id, text='Текущий онлайн в PUBG: ' + str(model.getAmount()))
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('pubg', pubg))
@@ -33,3 +33,4 @@ if __name__ == '__main__':
     callbacks()
     updater.start_polling()
     updater.idle()
+
