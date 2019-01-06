@@ -11,9 +11,9 @@ class Model(): # класс в котором храннятся все данн
     timer = int()
     # в следующей строке делаем запрос на сайт с количеством игроков и скрапим его через beautiful soup
     pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
-    # helloFile = open('hello.txt', 'r')
-    # hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
-    # helloFile.close()
+    helloFile = open('hello.txt', 'r')
+    hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
+    helloFile.close()
     def updatesoap(self): # метод который обновляет количество игроков
         self.pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     def getAmount(self):
