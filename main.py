@@ -39,12 +39,18 @@ def joke(bot, update):
     joke = soup.find(class_="text").contents[0].contents[0].contents[0]
     bot.sendMessage(chat_id=update.message.chat_id, text=str(joke))
 
+def fact(bot, update):
+    soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
+    fact = soup_f.find(class_="text").contents[0].contents[0].contents[0]
+    bot.sendMessage(chat_id=update.message.chat_id, text=str(fact))
+
 def btc(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text='BTC/USD: ' + str(model.getAmountBTC()))
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('pubg', pubg))
 updater.dispatcher.add_handler(CommandHandler('joke', joke))
+updater.dispatcher.add_handler(CommandHandler('fact', fact))
 updater.dispatcher.add_handler(CommandHandler('btc', btc))
 
 def callbacks():
