@@ -36,9 +36,8 @@ def pubg(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text='Текущий онлайн в PUBG: ' + str(model.getAmount()))
 
 def joke(bot, update):
-    soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
-    joke = soup.find(class_="text").contents[0].contents[0].contents[0]
-    bot.sendMessage(chat_id=update.message.chat_id, text=str(joke))
+    joke = BeautifulSoup(requests.get('http://freegenerator.ru/shutok').text, features="html.parser").find( 'a',class_='item_bg').contents[0]
+    bot.sendMessage(chat_id=update.message.chat_id, text='ШУТКА '  + str(joke))
 
 def btc(bot, update):
     round(getAmountBTC, 2)
