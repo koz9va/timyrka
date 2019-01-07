@@ -44,6 +44,9 @@ def fact(bot, update):
     fact = soup_f.find(class_="text").contents[0].contents[0].contents[0]
     bot.sendMessage(chat_id=update.message.chat_id, text=str(fact))
 
+def slavaukraine(bot, update):
+    bot.sendMessage(chat_id=update.message.chat_id, text='Героям слава!')    
+
 def btc(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text='BTC/USD: ' + str(model.getAmountBTC()))
 
@@ -51,6 +54,7 @@ updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('pubg', pubg))
 updater.dispatcher.add_handler(CommandHandler('joke', joke))
 updater.dispatcher.add_handler(CommandHandler('fact', fact))
+updater.dispatcher.add_handler(CommandHandler('slavaukraine', slavaukraine))
 updater.dispatcher.add_handler(CommandHandler('btc', btc))
 
 def callbacks():
