@@ -29,6 +29,10 @@ class Model(): # класс в котором храннятся все данн
     helloFile = open('hello.txt', 'r')
     hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
     helloFile.close()
+    #Вот это под вопросом:
+    #kpopFille = open('k-pop.txt')
+    #kpopdata = kpopFille.readlines()
+    #kpopFille.close()
     def updatesoap(self): # метод который обновляет количество игроков
         self.pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     def getAmount(self):
@@ -76,12 +80,15 @@ def slavaukraine(message: Message):
     print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
     bot.send_message(message.chat.id, 'Героям слава!')
 
+#проверки по массиву еще нет
+#нужно научить этого придурка работать в конфе
 @bot.message_handler(content_types=['text'])
 @bot.edited_message_handler(content_types=['text'])
-def echo_digits(message: Message):
-    print(message.from_user.id)
-    if 'кпоп' or 'к-поп' and 'Кпоп' in message.text:
-        bot.send_message(message.chat.id, 'К-поп - ГОВНО!')
+def kpop(message: Message):
+    if  message.text == 'к-поп':
+        bot.send_message(message.chat.id, 'К-поп - ГОВНО!') 
+        print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп') #выдача в консоль
+
 
 def callbacks():
     model.updatesoap()# функция которая вызывется раз в пять минут в которая запускает все остальные функции
