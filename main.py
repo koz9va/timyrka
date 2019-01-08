@@ -1,9 +1,31 @@
 import random
 import logging
 import time, threading
+import pickle
+import telebot
+from telebot import types
+from telebot.types import Message
 from telegram.ext import Updater, CommandHandler
 from bs4 import BeautifulSoup
+from datetime import datetime
 import requests
+
+TOKEN = '771027063:AAHjnTSc5uH5BapuPAHsHwuKiN7VaQludzc' #токен бота
+bot = telebot.TeleBot(TOKEN)
+USERS = set() 
+
+@bot.message_handler(commands=['pubg', 'joke', 'btc', 'fact', 'slavaukraine'])
+def command_handler(message: Message):
+    bot.send_message(message.chat.id, 'в разработке, петушара')
+
+
+@bot.message_handler(content_types=['text'])
+@bot.edited_message_handler(content_types=['text'])
+def echo_digits(message: Message):
+    print(message.from_user.id)
+    if 'кпоп' or 'к-поп' or 'Кпоп' in message.text:
+        bot.send_message(message.chat.id, 'К-поп - ГОВНО!')    
+
 def getJsonVal(link = str(), path = list()): # функция которая принимает строку ссылки и "путь" к данным в json
         jsonResponce = requests.get(link).json() # а потом возваращет готовый результат
         for step in path: # нужно подумать что делать в том случае если на пути будет массив
@@ -28,43 +50,30 @@ class Model(): # класс в котором храннятся все данн
 
 model = Model() # создаём модель
 
-def hello(bot, update):
-    rn = random.randint(0, len(model.hellodata)) # генерируем случайный номер строки
-    update.message.reply_text(
-        'Привет, {}!'.format(update.message.from_user.first_name)
-    )
-    bot.sendMessage(chat_id=update.message.chat_id, text=model.hellodata[rn]) # отправляем случайный елемент масива
-updater = Updater('771027063:AAHjnTSc5uH5BapuPAHsHwuKiN7VaQludzc') # токен бота
-def pubg(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text='Текущий онлайн в PUBG: ' + str(model.getAmount()))
+def pubg(message: Message):
+    bot.reply_to(message,'Текущий онлайн в PUBG: ' + str(model.getAmount()))  
 
-def joke(bot, update):
+def joke(message: Message):
     soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
     joke = soup.find(class_="text").contents[0].contents[0].contents[0]
-    bot.sendMessage(chat_id=update.message.chat_id, text=str(joke))
+    bot.sendMessage(message, text=str(joke))
 
-def fact(bot, update):
+@bot.message_handler(commands=['fact'])
+def fact(message: Message):
     soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
     fact = soup_f.find(class_="text").contents[0].contents[0].contents[0]
-    bot.sendMessage(chat_id=update.message.chat_id, text=str(fact))
+    bot.send_message(message.chat.id, text=str(fact))
 
-def slavaukraine(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text='Героям слава!')
+def slavaukraine(message: Message):
+    bot.sendMessage(message, text='Героям слава!')
 
-def btc(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text='BTC/USD: ' + str(model.getAmountBTC()) + ' $')
-
-updater.dispatcher.add_handler(CommandHandler('hello', hello))
-updater.dispatcher.add_handler(CommandHandler('pubg', pubg))
-updater.dispatcher.add_handler(CommandHandler('joke', joke))
-updater.dispatcher.add_handler(CommandHandler('fact', fact))
-updater.dispatcher.add_handler(CommandHandler('slavaukraine', slavaukraine))
-updater.dispatcher.add_handler(CommandHandler('btc', btc))
+def btc(message: Message):
+    bot.sendMessage(message, text='BTC/USD: ' + str(model.getAmountBTC()) + ' $')  
 
 def callbacks():
     model.updatesoap()# функция которая вызывется раз в пять минут в которая запускает все остальные функции
     model.updbtc()
 if __name__ == '__main__': # проверка на прямой запуск файла, то есть если добавить его через import эти комманды не будут выполнены
     threading.Timer(300 , callbacks).start()# запуск периодических функцый в отдельном потоке
-    updater.start_polling() # сам запуск бота
-    updater.idle()
+    bot.polling() # сам запуск бота
+    
