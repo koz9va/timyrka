@@ -12,25 +12,15 @@ import requests
 
 TOKEN = '771027063:AAHjnTSc5uH5BapuPAHsHwuKiN7VaQludzc' #токен бота
 bot = telebot.TeleBot(TOKEN)
-USERS = set() 
+USERS = set()
 
-@bot.message_handler(commands=['pubg', 'joke', 'btc', 'fact', 'slavaukraine'])
-def command_handler(message: Message):
-    bot.send_message(message.chat.id, 'в разработке, петушара')
-
-
-@bot.message_handler(content_types=['text'])
-@bot.edited_message_handler(content_types=['text'])
-def echo_digits(message: Message):
-    print(message.from_user.id)
-    if 'кпоп' or 'к-поп' or 'Кпоп' in message.text:
-        bot.send_message(message.chat.id, 'К-поп - ГОВНО!')    
 
 def getJsonVal(link = str(), path = list()): # функция которая принимает строку ссылки и "путь" к данным в json
         jsonResponce = requests.get(link).json() # а потом возваращет готовый результат
         for step in path: # нужно подумать что делать в том случае если на пути будет массив
             jsonResponce = jsonResponce[step]
         return jsonResponce
+
 class Model(): # класс в котором храннятся все данные которые мы передаём пользователям
     timer = int()
     # в следующей строке делаем запрос на сайт с количеством игроков и скрапим его через beautiful soup
@@ -50,29 +40,53 @@ class Model(): # класс в котором храннятся все данн
 
 model = Model() # создаём модель
 
-def pubg(message: Message):
-    bot.reply_to(message,'Текущий онлайн в PUBG: ' + str(model.getAmount()))  
 
+@bot.message_handler(commands=['joke'])
 def joke(message: Message):
     soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
-    joke = soup.find(class_="text").contents[0].contents[0].contents[0]
-    bot.sendMessage(message, text=str(joke))
+    JOKE = soup.find(class_="text").contents[0].contents[0].contents[0]
+    print('Шутка: ', JOKE) #выдача в консоль
+    bot.send_message(message.chat.id, JOKE)
+
 
 @bot.message_handler(commands=['fact'])
 def fact(message: Message):
     soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
-    fact = soup_f.find(class_="text").contents[0].contents[0].contents[0]
-    bot.send_message(message.chat.id, text=str(fact))
+    FACT = soup_f.find(class_="text").contents[0].contents[0].contents[0]
+    print('Факт: ', FACT) #выдача в консоль
+    bot.send_message(message.chat.id, FACT)
 
-def slavaukraine(message: Message):
-    bot.sendMessage(message, text='Героям слава!')
 
+@bot.message_handler(commands=['pubg'])
+def pubg(message: Message):
+    PUBG = model.getAmount()
+    print('Текущий онлайн в PUBG: онлайн', PUBG) #выдача в консоль
+    bot.send_message(message.chat.id,'Текущий онлайн в PUBG: ' + PUBG)
+
+
+@bot.message_handler(commands=['btc'])
 def btc(message: Message):
-    bot.sendMessage(message, text='BTC/USD: ' + str(model.getAmountBTC()) + ' $')  
+    BTC = model.getAmountBTC()
+    print('Курс битка: ', BTC, ' $') #выдача в консоль
+    bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $')
+
+
+@bot.message_handler(commands=['ua'])
+def slavaukraine(message: Message):
+    print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
+    bot.send_message(message.chat.id, 'Героям слава!')
+
+@bot.message_handler(content_types=['text'])
+@bot.edited_message_handler(content_types=['text'])
+def echo_digits(message: Message):
+    print(message.from_user.id)
+    if 'кпоп' or 'к-поп' and 'Кпоп' in message.text:
+        bot.send_message(message.chat.id, 'К-поп - ГОВНО!')
 
 def callbacks():
     model.updatesoap()# функция которая вызывется раз в пять минут в которая запускает все остальные функции
     model.updbtc()
+
 if __name__ == '__main__': # проверка на прямой запуск файла, то есть если добавить его через import эти комманды не будут выполнены
     threading.Timer(300 , callbacks).start()# запуск периодических функцый в отдельном потоке
     bot.polling() # сам запуск бота
