@@ -64,7 +64,7 @@ def fact(message: Message):
 @bot.message_handler(commands=['pubg'])
 def pubg(message: Message):
     PUBG = model.getAmount()
-    print('Текущий онлайн в PUBG: онлайн', PUBG) #выдача в консоль
+    print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
     bot.send_message(message.chat.id,'Текущий онлайн в PUBG: ' + PUBG)
 
 
@@ -80,15 +80,17 @@ def slavaukraine(message: Message):
     print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
     bot.send_message(message.chat.id, 'Героям слава!')
 
+
 #проверки по массиву еще нет
-#нужно научить этого придурка работать в конфе
 @bot.message_handler(content_types=['text'])
 @bot.edited_message_handler(content_types=['text'])
 def kpop(message: Message):
-    if  message.text == 'к-поп':
+    kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
+    lines = kpopFille.readlines()
+    if  'к-поп' in message.text: #ПИЗДА, я заебался(((
         bot.send_message(message.chat.id, 'К-поп - ГОВНО!') 
-        print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп') #выдача в консоль
-
+        print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
+        print(lines)    
 
 def callbacks():
     model.updatesoap()# функция которая вызывется раз в пять минут в которая запускает все остальные функции
