@@ -87,10 +87,15 @@ def slavaukraine(message: Message):
 def kpop(message: Message):
     kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
     lines = kpopFille.readlines()
-    if  'к-поп' in message.text: #ПИЗДА, я заебался(((
-        bot.send_message(message.chat.id, 'К-поп - ГОВНО!') 
-        print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
-        print(lines)    
+    t1 = message.text
+    t1 = t1.split(',')
+    for str in lines:
+        if  message.text in str: #ПИЗДА, я заебался(((
+            bot.send_message(message.chat.id, 'К-поп - ГОВНО!') 
+            print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
+            print('Сообщение юзера:', t1)
+            print(lines)
+
 
 def callbacks():
     model.updatesoap()# функция которая вызывется раз в пять минут в которая запускает все остальные функции
