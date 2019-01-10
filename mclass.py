@@ -3,7 +3,6 @@ import pickle
 class User:
     chatId = str()
     name = str()
-    created = str()
     blocked = []
     isReady = False
     timeToSend = 0
@@ -11,10 +10,9 @@ class User:
     sentToUsr = 0
     banned = False
     sentMess = 0
-    def __init__(self, chtid = '', nm = '', crt = ''):
+    def __init__(self, chtid = '', nm = ''):
         self.chatId = chtid
-        self.name = nm
-        self.created = crt
+        self.name = '@'+nm
     def block(self, msg):
         self.blocked.append((msg.authName, msg.author))
     def unblock(self, aunm = ''):
@@ -27,14 +25,8 @@ class ownmessage:
     text = str()
     author = str()
     authName = str()
-    terms = True
+    To = str()
     def __init__(self, txt = '', auth = '', authNm = '@0'):
-        if len(txt) > 300:
-            terms = False
-        if txt == '' or txt[0] == ' ':
-            terms = False
-        if authNm == '@0':
-            terms = False
         self.text = txt
         self.author = auth
         self.authName = authNm
@@ -44,8 +36,13 @@ class MessWork:
     picklFile = ''
     def __init__(self, fileL = ''):
         self.picklFile = fileL
+        try:
+            self.f5()
+        except:
+            print('free file')
     def start(self, usr):
         self.Users.append(usr)
+        self.save()
     def save(self):
         with open(self.picklFile, 'wb') as output:
             pickle.dump(self.Users, output, pickle.HIGHEST_PROTOCOL)

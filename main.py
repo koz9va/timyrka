@@ -1,10 +1,14 @@
 import random
+import logging
 import time, threading
 import telebot
+from telebot import types
+from telebot.types import Message
 from telegram.ext import Updater, CommandHandler
 from bs4 import BeautifulSoup
 from datetime import datetime
 import requests
+import mclass
 
 TOKEN = '771027063:AAHjnTSc5uH5BapuPAHsHwuKiN7VaQludzc' #токен бота
 bot = telebot.TeleBot(TOKEN)
@@ -25,6 +29,8 @@ class Model(): # класс в котором храннятся все данн
     helloFile = open('hello.txt', 'r')
     hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
     helloFile.close()
+    msg = mclass.MessWork('UsrsBd.pkl')
+    tmsg = mclass.ownmessage()
     #Вот это под вопросом:
     #kpopFille = open('k-pop.txt')
     #kpopdata = kpopFille.readlines()
@@ -37,7 +43,13 @@ class Model(): # класс в котором храннятся все данн
         self.btcusd = getJsonVal('https://api.coindesk.com/v1/bpi/currentprice.json', ('bpi', 'USD', 'rate'))
     def getAmountBTC(self):
         return self.btcusd
-
+    def sendTo(self, cmsg):
+        for usr in self.msg.Users:
+            if usr.name == cmsg.To:
+                if cmsg.authName == any(usr.blocked):
+                    break
+                else:
+                    bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text)
 model = Model() # создаём модель
 
 
@@ -75,6 +87,31 @@ def btc(message: Message):
 def slavaukraine(message: Message):
     print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
     bot.send_message(message.chat.id, 'Героям слава!')
+
+@bot.message_handler(commands=['getIn'])
+def getinchat(message: Message):
+    model.msg.start(mclass.User(message.chat.id, message.from_user.username))
+    bot.send_message(message.chat.id, '@'+str(message.from_user.username)+' теперь может принимать сообщения')
+    print(message.chat.id)
+    print(message.from_user.username)
+@bot.message_handler(commands=['send'])
+def sendMess(message: Message):
+    msg = bot.reply_to(message, 'Укажите условное имя автора')
+    bot.register_next_step_handler(msg, auth)
+
+def auth(message):
+        model.tmsg.authName = message.text
+        model.tmsg.author = message.from_user.username
+        msg = bot.reply_to(message, 'послание:')
+        bot.register_next_step_handler(msg,textm)
+def textm(message):
+        model.tmsg.text = message.text
+        msg = bot.reply_to(message, 'адресат:')
+        bot.register_next_step_handler(msg, tom)
+def tom(message):
+    model.tmsg.To = message.text
+    model.sendTo(model.tmsg)
+    model.tmsg = mclass.ownmessage()
 
 #проверки по массиву еще нет
 #нужно научить этого придурка работать в конфе
