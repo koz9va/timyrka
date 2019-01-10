@@ -1,10 +1,6 @@
 import random
-import logging
 import time, threading
-import pickle
 import telebot
-from telebot import types
-from telebot.types import Message
 from telegram.ext import Updater, CommandHandler
 from bs4 import BeautifulSoup
 from datetime import datetime
