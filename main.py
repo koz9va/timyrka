@@ -22,7 +22,6 @@ def getJsonVal(link = str(), path = list()): # функция которая п�
 
 class Model(): # класс в котором храннятся все данные которые мы передаём пользователям
     timer = int()
-    kpop = ('кпоп', 'к-поп', 'Кпоп', 'К-поп')
     # в следующей строке делаем запрос на сайт с количеством игроков и скрапим его через beautiful soup
     pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     btcusd = getJsonVal('https://api.coindesk.com/v1/bpi/currentprice.json', ('bpi', 'USD', 'rate'))
@@ -30,11 +29,17 @@ class Model(): # класс в котором храннятся все данн
     hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
     helloFile.close()
     msg = mclass.MessWork('UsrsBd.pkl')
-    messStore = open('messages.txt', 'a')
     #Вот это под вопросом:
     #kpopFille = open('k-pop.txt')
     #kpopdata = kpopFille.readlines()
     #kpopFille.close()
+    kpopdata = ['KPOP', 'кпопу','К-поп', 'к-поп', 'кпоп', 'k-pop', 'K-pop', 'КПОП', 'К-ПОП', 'Кпоп']
+    kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
+    kpopans = kpopFille.readlines()
+    kpopFille.close()
+    kpopstdata = []
+    with open('kpop_sticker_id.txt') as f:
+        kpopstdata = f.read().splitlines()
     def updatesoap(self): # метод который обновляет количество игроков
         self.pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     def getAmount(self):
@@ -87,7 +92,7 @@ def fact(message: Message):
 @bot.message_handler(commands=['pubg'])
 def pubg(message: Message):
     PUBG = model.getAmount()
-    print('Текущий онлайн в PUBG: онлайн', PUBG) #выдача в консоль
+    print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
     bot.send_message(message.chat.id,'Текущий онлайн в PUBG: ' + PUBG)
 
 
@@ -229,6 +234,48 @@ def tom(message):
         bot.register_next_step_handler(msg, tom)
 #проверки по массиву еще нет
 #нужно научить этого придурка работать в конфе
+=======
+#стоп пока что не работает 
+@bot.message_handler(commands=['stop_kpop'])
+def stopkpop(message: Message):
+    bot.send_message(message.chat.id, 'Ладно, ладно... Не буду хуесоить к-поп в течении 30 минут.')
+    t = Timer(1800)
+    t.start()
+
+
+#Парсер Стикеров:
+#@bot.message_handler(content_types=['sticker'])
+#def sticker_handler(message: Message):
+#    id = message.sticker.file_id
+#    print(id)
+#    g = open('файл.txt', 'a', encoding='utf-8')
+#    g.write('\n' + id)
+#    g.close()
+
+@bot.message_handler(content_types=['text'])
+@bot.edited_message_handler(content_types=['text'])
+def kpop(message: Message):
+    rn1 = len(model.kpopans) - 1 #питон счет строк начинается с нуля, поэтому нужно прописать -1 
+    rn = random.randint(0, rn1) #генерим номер строки
+    t1 = message.text
+    t2 = t1.split(' ')
+    for word in t2:
+        if str(word) in model.kpopdata:
+            bot.send_message(message.chat.id, model.kpopans[rn]) 
+            print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
+            print('Сообщение юзера:', t1) #выдача в консоль
+            break
+
+
+@bot.message_handler(content_types=['sticker'])    
+def kpop_sticker(message: Message):
+    STICKER_ID = [message.sticker.file_id] #id стикера который к нам приходит 
+    for word in STICKER_ID:
+        if str(word) in model.kpopstdata:
+            bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
+            print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
+            break    
+
 
 
 def callbacks():
@@ -240,8 +287,10 @@ def timers():
     for usr in range(0,len(model.msg.TooUsers)-1):
         if model.msg.TooUsers[usr][1] <= 0:
             del model.msg.TooUsers[usr]
-        model.msg.TooUsers[usr][1] += 1
+        model.msg.TooUsers[usr][1] -= 1
 if __name__ == '__main__': # проверка на прямой запуск файла, то есть если добавить его через import эти комманды не будут выполнены
+
     threading.Timer(300 , callbacks).start()# запуск периодических функцый в отдельном потоке
     threading.Timer(1, timers)
     bot.polling() # сам запуск бота
+
