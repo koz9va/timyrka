@@ -7,6 +7,7 @@ class User:
     isReady = False
     timeToSend = 0
     timeToUsr = 0
+    sentUsrs = []
     sentToUsr = 0
     banned = False
     sentMess = 0

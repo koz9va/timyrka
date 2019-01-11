@@ -23,6 +23,7 @@ def getJsonVal(link = str(), path = list()): # функция которая п�
 
 class Model(): # класс в котором храннятся все данные которые мы передаём пользователям
     timer = int()
+    kpop = ('кпоп', 'к-поп', 'Кпоп', 'К-поп')
     # в следующей строке делаем запрос на сайт с количеством игроков и скрапим его через beautiful soup
     pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     btcusd = getJsonVal('https://api.coindesk.com/v1/bpi/currentprice.json', ('bpi', 'USD', 'rate'))
@@ -46,10 +47,12 @@ class Model(): # класс в котором храннятся все данн
     def sendTo(self, cmsg):
         for usr in self.msg.Users:
             if usr.name == cmsg.To:
-                if cmsg.authName == any(usr.blocked):
-                    break
+                if cmsg.authName in usr.blocked:
+                    return False
                 else:
                     bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text)
+                    return True
+        return False
 model = Model() # создаём модель
 
 
@@ -90,42 +93,71 @@ def slavaukraine(message: Message):
 
 @bot.message_handler(commands=['getIn'])
 def getinchat(message: Message):
-    model.msg.start(mclass.User(message.chat.id, message.from_user.username))
-    bot.send_message(message.chat.id, '@'+str(message.from_user.username)+' теперь может принимать сообщения')
-    print(message.chat.id)
-    print(message.from_user.username)
+    notadd = False
+    for user in model.msg.Users:
+       if str(user.name) == '@'+str(message.from_user.username):
+           notadd = True
+           break
+    if notadd == False:
+        model.msg.start(mclass.User(message.chat.id, message.from_user.username))
+        bot.send_message(message.chat.id, '@'+str(message.from_user.username)+' теперь может принимать сообщения')
+        print(message.chat.id)
+        print('@'+message.from_user.username)
+    else:
+        bot.send_message(message.chat.id, 'Вы уже зарегестрированы')
 @bot.message_handler(commands=['send'])
 def sendMess(message: Message):
     msg = bot.reply_to(message, 'Укажите условное имя автора')
     bot.register_next_step_handler(msg, auth)
 
 def auth(message):
+    if len(str(message.text)) > 20:
+        msg = bot.reply_to(message, 'не больше 20 символов')
+        bot.register_next_step_handler(msg ,auth)
+    else:
         model.tmsg.authName = message.text
         model.tmsg.author = message.from_user.username
         msg = bot.reply_to(message, 'послание:')
         bot.register_next_step_handler(msg,textm)
+
 def textm(message):
+    if len(str(message.text)) > 300:
+        msg = bot.reply_to(message, 'не больше 300 символов')
+        bot.register_next_step_handler(msg , textm)
+    else:
         model.tmsg.text = message.text
         msg = bot.reply_to(message, 'адресат:')
         bot.register_next_step_handler(msg, tom)
+
 def tom(message):
     model.tmsg.To = message.text
-    model.sendTo(model.tmsg)
-    model.tmsg = mclass.ownmessage()
-
+    check = list(message.text)
+    if check[0] == '@':
+        for usr in model.msg.Users:
+            if usr.name == '@'+message.from_user.username:
+                if usr.sentToUsr < 10:
+                    if model.tmsg.To not in usr.sentUsrs:
+                        usr.sentUsrs.append(message.text)
+                        usr.sentToUsr += 1
+                    if model.sendTo(model.tmsg) == False:
+                        bot.send_message(message.chat.id, 'Этот пользователь заблокировал вас, или вы непрввильно указали ник, или этот пользователь не зарегистрирован в нашей системе')
+                    else:
+                        bot.send_message(message.chat.id, 'Сообщение отправлено '+ message.text)
+                    model.tmsg = mclass.ownmessage()
+                else:
+                    bot.send_message(message.chat.id, 'Вы уже написали максимальному количеству пользователей, подождите максимум 5 минут')
+    else:
+        msg = bot.reply_to(message, 'ник должен начинаться с @')
+        bot.register_next_step_handler(msg, tom)
 #проверки по массиву еще нет
 #нужно научить этого придурка работать в конфе
-@bot.message_handler(content_types=['text'])
-@bot.edited_message_handler(content_types=['text'])
-def kpop(message: Message):
-    if  message.text == 'к-поп':
-        bot.send_message(message.chat.id, 'К-поп - ГОВНО!') 
-        print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп') #выдача в консоль
 
 
 def callbacks():
     model.updatesoap()# функция которая вызывется раз в пять минут в которая запускает все остальные функции
     model.updbtc()
+    model.msg.save()
+    
 
 if __name__ == '__main__': # проверка на прямой запуск файла, то есть если добавить его через import эти комманды не будут выполнены
     threading.Timer(300 , callbacks).start()# запуск периодических функцый в отдельном потоке
