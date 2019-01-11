@@ -34,6 +34,9 @@ class Model(): # класс в котором храннятся все данн
     kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
     kpopans = kpopFille.readlines()
     kpopFille.close()
+    kpopstdata = []
+    with open('kpop_sticker_id.txt') as f:
+        kpopstdata = f.read().splitlines()
     def updatesoap(self): # метод который обновляет количество игроков
         self.pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     def getAmount(self):
@@ -82,8 +85,6 @@ def slavaukraine(message: Message):
     bot.send_message(message.chat.id, 'Героям слава!')
 
 #стоп пока что не работает 
-t = 0
-tmr = 0
 @bot.message_handler(commands=['stop_kpop'])
 def stopkpop(message: Message):
     bot.send_message(message.chat.id, 'Ладно, ладно... Не буду хуесоить к-поп в течении 30 минут.')
@@ -91,24 +92,39 @@ def stopkpop(message: Message):
     t.start()
 
 
+#Парсер Стикеров:
+#@bot.message_handler(content_types=['sticker'])
+#def sticker_handler(message: Message):
+#    id = message.sticker.file_id
+#    print(id)
+#    g = open('файл.txt', 'a', encoding='utf-8')
+#    g.write('\n' + id)
+#    g.close()
+
 @bot.message_handler(content_types=['text'])
 @bot.edited_message_handler(content_types=['text'])
 def kpop(message: Message):
-    tmr = t 
-    if tmr == 0: 
-        rn1 = len(model.kpopans) - 1 #питон счет строк начинается с нуля, поэтому нужно прописать -1 
-        rn = random.randint(0, rn1) #генерим номер строки
-        t1 = message.text
-        t2 = t1.split(' ')
-        print(rn, rn1)
-        for word in t2:
-            if str(word) in model.kpopdata:
-                bot.send_message(message.chat.id, model.kpopans[rn]) 
-                print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
-                print('Сообщение юзера:', t1) #выдача в консоль
-                break
-    
-                
+    rn1 = len(model.kpopans) - 1 #питон счет строк начинается с нуля, поэтому нужно прописать -1 
+    rn = random.randint(0, rn1) #генерим номер строки
+    t1 = message.text
+    t2 = t1.split(' ')
+    for word in t2:
+        if str(word) in model.kpopdata:
+            bot.send_message(message.chat.id, model.kpopans[rn]) 
+            print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
+            print('Сообщение юзера:', t1) #выдача в консоль
+            break
+
+
+@bot.message_handler(content_types=['sticker'])    
+def kpop_sticker(message: Message):
+    STICKER_ID = [message.sticker.file_id] #id стикера который к нам приходит 
+    for word in STICKER_ID:
+        if str(word) in model.kpopstdata:
+            bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
+            print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
+            break    
+
 
 def callbacks():
     model.updatesoap()# функция которая вызывется раз в пять минут в которая запускает все остальные функции
