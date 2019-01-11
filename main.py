@@ -29,15 +29,11 @@ class Model(): # класс в котором храннятся все данн
     hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
     helloFile.close()
     msg = mclass.MessWork('UsrsBd.pkl')
-    #Вот это под вопросом:
-    #kpopFille = open('k-pop.txt')
-    #kpopdata = kpopFille.readlines()
-    #kpopFille.close()
     kpopdata = ['KPOP', 'кпопу','К-поп', 'к-поп', 'кпоп', 'k-pop', 'K-pop', 'КПОП', 'К-ПОП', 'Кпоп']
     kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
     kpopans = kpopFille.readlines()
     kpopFille.close()
-    kpopstdata = []
+    kpopstdata = [] 
     with open('kpop_sticker_id.txt') as f:
         kpopstdata = f.read().splitlines()
     def updatesoap(self): # метод который обновляет количество игроков
@@ -79,23 +75,17 @@ def joke(message: Message):
     JOKE = soup.find(class_="text").contents[0].contents[0].contents[0]
     print('Шутка: ', JOKE) #выдача в консоль
     bot.send_message(message.chat.id, JOKE)
-
-
 @bot.message_handler(commands=['fact'])
 def fact(message: Message):
     soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
     FACT = soup_f.find(class_="text").contents[0].contents[0].contents[0]
     print('Факт: ', FACT) #выдача в консоль
     bot.send_message(message.chat.id, FACT)
-
-
 @bot.message_handler(commands=['pubg'])
 def pubg(message: Message):
     PUBG = model.getAmount()
     print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
     bot.send_message(message.chat.id,'Текущий онлайн в PUBG: ' + PUBG)
-
-
 @bot.message_handler(commands=['btc'])
 def btc(message: Message):
     BTC = model.getAmountBTC()
@@ -161,7 +151,6 @@ def nextreply0(message: Message):
                 break
             else:
                 bot.send_message(message.chat.id, 'Ок')
-
 @bot.message_handler(commands=['unblock'])
 def unblock(message: Message):
     if message.chat.type == 'private':
@@ -172,7 +161,6 @@ def unblock(message: Message):
                 break
     else:
         bot.reply_to(message, 'не палися, всі ж дивляться')
-
 @bot.message_handler(commands=['send'])
 def sendMess(message: Message):
     if message.chat.type == 'private':
@@ -232,15 +220,13 @@ def tom(message):
     else:
         msg = bot.reply_to(message, 'ник должен начинаться с @')
         bot.register_next_step_handler(msg, tom)
-#проверки по массиву еще нет
-#нужно научить этого придурка работать в конфе
-=======
+
 #стоп пока что не работает 
-@bot.message_handler(commands=['stop_kpop'])
-def stopkpop(message: Message):
-    bot.send_message(message.chat.id, 'Ладно, ладно... Не буду хуесоить к-поп в течении 30 минут.')
-    t = Timer(1800)
-    t.start()
+#@bot.message_handler(commands=['stop_kpop'])
+#def stopkpop(message: Message):
+#    bot.send_message(message.chat.id, 'Ладно, ладно... Не буду хуесоить к-поп в течении 30 минут.')
+#    t = Timer(1800)
+#    t.start()
 
 
 #Парсер Стикеров:
