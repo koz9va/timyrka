@@ -1,5 +1,14 @@
 import pickle
 
+class ownmessage:
+    text = str()
+    author = str()
+    authName = str()
+    To = str()
+    def __init__(self, txt = '', auth = '', authNm = '@0'):
+        self.text = txt
+        self.author = auth
+        self.authName = authNm
 class User:
     chatId = str()
     name = str()
@@ -9,6 +18,9 @@ class User:
     timeToUsr = 0
     sentUsrs = []
     sentToUsr = 0
+    last = str()
+    lastName = str()
+    lastM = ownmessage()
     banned = False
     sentMess = 0
     def __init__(self, chtid = '', nm = ''):
@@ -21,19 +33,9 @@ class User:
             if self.blocked[i][1] == aunm:
                 del self.blocked[i]
                 break
-
-class ownmessage:
-    text = str()
-    author = str()
-    authName = str()
-    To = str()
-    def __init__(self, txt = '', auth = '', authNm = '@0'):
-        self.text = txt
-        self.author = auth
-        self.authName = authNm
-
 class MessWork:
     Users = []
+    TooUsers = []
     picklFile = ''
     def __init__(self, fileL = ''):
         self.picklFile = fileL
