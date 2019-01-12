@@ -43,6 +43,7 @@ class MessWork:
             self.f5()
         except:
             print('free file')
+            self.save()
     def start(self, usr):
         self.Users.append(usr)
         self.save()
