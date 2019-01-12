@@ -1,4 +1,5 @@
 import pickle
+from os import path
 
 class ownmessage:
     text = str()
@@ -43,14 +44,17 @@ class MessWork:
             self.f5()
         except:
             print('free file')
+            self.save()
     def start(self, usr):
         self.Users.append(usr)
         self.save()
     def save(self):
-        with open(self.picklFile, 'wb') as output:
+        here = path.dirname(path.abspath(__file__))
+        with open(path.join(here, self.picklFile), 'wb') as output:
             pickle.dump(self.Users, output, pickle.HIGHEST_PROTOCOL)
     def f5(self):
-        with open(self.picklFile, 'rb') as inpt:
+        here = path.dirname(path.abspath(__file__))
+        with open(path.join(here, self.picklFile), 'rb') as inpt:
             self.Users = pickle.load(inpt)
 
     

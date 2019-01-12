@@ -28,7 +28,7 @@ class Model(): # класс в котором храннятся все данн
     helloFile = open('hello.txt', 'r')
     hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
     helloFile.close()
-    msg = mclass.MessWork('UsrsBd.pkl')
+    msg = mclass.MessWork('Usrs')
     #Вот это под вопросом:
     #kpopFille = open('k-pop.txt')
     #kpopdata = kpopFille.readlines()
@@ -54,7 +54,7 @@ class Model(): # класс в котором храннятся все данн
                 if cmsg.author in usr.blocked:
                     return False
                 else:
-                    bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text)
+                    bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text+ '\n Чтобы заблокировать этого пользователя /block , чтобы ответить /reply')
                     usr.last = cmsg.author
                     usr.lastName = cmsg.authName
                     with open('messages.txt', 'a') as messStore:
@@ -77,7 +77,7 @@ def start(message: Message):
 def joke(message: Message):
     soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
     JOKE = soup.find(class_="text").contents[0].contents[0].contents[0]
-    print('Шутка: ', JOKE) #выдача в консоль
+    #print('Шутка: ', JOKE) #выдача в консоль
     bot.send_message(message.chat.id, JOKE)
 
 
@@ -85,27 +85,27 @@ def joke(message: Message):
 def fact(message: Message):
     soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
     FACT = soup_f.find(class_="text").contents[0].contents[0].contents[0]
-    print('Факт: ', FACT) #выдача в консоль
+    #print('Факт: ', FACT) #выдача в консоль
     bot.send_message(message.chat.id, FACT)
 
 
 @bot.message_handler(commands=['pubg'])
 def pubg(message: Message):
     PUBG = model.getAmount()
-    print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
+    #print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
     bot.send_message(message.chat.id,'Текущий онлайн в PUBG: ' + PUBG)
 
 
 @bot.message_handler(commands=['btc'])
 def btc(message: Message):
     BTC = model.getAmountBTC()
-    print('Курс битка: ', BTC, ' $') #выдача в консоль
+    #print('Курс битка: ', BTC, ' $') #выдача в консоль
     bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $')
 
 
 @bot.message_handler(commands=['ua'])
 def slavaukraine(message: Message):
-    print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
+    #print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
     bot.send_message(message.chat.id, 'Героям слава!')
 
 @bot.message_handler(commands=['getIn'])
@@ -113,16 +113,17 @@ def getinchat(message: Message):
     if message.chat.type == 'private':
         notadd = False
         for user in model.msg.Users:
+            #print(user.name)
             if str(user.name) == '@'+str(message.from_user.username):
                 notadd = True
                 break
-            if notadd == False:
-                model.msg.start(mclass.User(message.chat.id, message.from_user.username))
-                bot.send_message(message.chat.id, '@'+str(message.from_user.username)+' теперь может принимать сообщения')
-                print(message.chat.id)
-                print('@'+message.from_user.username)
-            else:
-                bot.send_message(message.chat.id, 'Вы уже зарегестрированы')
+        if notadd == False:
+            model.msg.start(mclass.User(message.chat.id, message.from_user.username))
+            bot.send_message(message.chat.id, '@'+str(message.from_user.username)+' теперь может принимать сообщения')
+            #print(message.chat.id)
+            #print('@'+message.from_user.username)
+        else:
+            bot.send_message(message.chat.id, 'Вы уже зарегестрированы')
     else:
         bot.reply_to(message, 'не палися, всі ж дивляться')
 @bot.message_handler(commands=['block'])
@@ -136,12 +137,14 @@ def ask0(message: Message):
     else:
         bot.reply_to(message, 'не палися, всі ж дивляться')
 def accept0(message: Message):
-    for usr in model.msg.Users: # нужно придумать как убрать это прожордивое безобразие
-        if '@'+str(message.from_user.username) == usr.name:
-            if str(message.text == 'Y'):
+    if str(message.text) == 'Y':
+        for usr in model.msg.Users: # нужно придумать как убрать это прожордивое безобразие
+            if '@'+str(message.from_user.username) == usr.name:
                 usr.blocked.append(usr.last)
                 bot.send_message(message.chat.id, 'пользователь '+ usr.lastName+' заблокирован')
                 model.msg.save()
+    else:
+        bot.send_message(message.chat.id, 'Ок')
 @bot.message_handler(commands=['reply'])
 def replyTo(message: Message):
     if message.chat.type == 'private':
@@ -157,7 +160,8 @@ def nextreply0(message: Message):
         if '@'+str(message.from_user.username) == usr.name:
             if message.text == 'Y':
                 usr.lastM.To = '@'+str(usr.last)
-                textm(message)
+                msg = bot.reply_to(message, 'Послание: ')
+                bot.register_next_step_handler(msg, textm)
                 break
             else:
                 bot.send_message(message.chat.id, 'Ок')
@@ -168,7 +172,7 @@ def unblock(message: Message):
         for usr in model.msg.Users:
             if usr.name == '@'+message.from_user.username:
                 bot.send_message(message.chat.id, 'Вы заблокировали: \n'+ str(u+'\n' for u in usr.blocked))
-                print(u+'\n' for u in usr.blocked)
+                #print(u+'\n' for u in usr.blocked)
                 break
     else:
         bot.reply_to(message, 'не палися, всі ж дивляться')
@@ -234,20 +238,19 @@ def tom(message):
         bot.register_next_step_handler(msg, tom)
 #проверки по массиву еще нет
 #нужно научить этого придурка работать в конфе
-=======
 #стоп пока что не работает 
-@bot.message_handler(commands=['stop_kpop'])
-def stopkpop(message: Message):
-    bot.send_message(message.chat.id, 'Ладно, ладно... Не буду хуесоить к-поп в течении 30 минут.')
-    t = Timer(1800)
-    t.start()
+# @bot.message_handler(commands=['stop_kpop'])
+# def stopkpop(message: Message):
+#     bot.send_message(message.chat.id, 'Ладно, ладно... Не буду хуесоить к-поп в течении 30 минут.')
+#     t = Timer(1800)
+#     t.start()
 
 
 #Парсер Стикеров:
 #@bot.message_handler(content_types=['sticker'])
 #def sticker_handler(message: Message):
 #    id = message.sticker.file_id
-#    print(id)
+#    #print(id)
 #    g = open('файл.txt', 'a', encoding='utf-8')
 #    g.write('\n' + id)
 #    g.close()
@@ -262,8 +265,8 @@ def kpop(message: Message):
     for word in t2:
         if str(word) in model.kpopdata:
             bot.send_message(message.chat.id, model.kpopans[rn]) 
-            print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
-            print('Сообщение юзера:', t1) #выдача в консоль
+            #print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
+            #print('Сообщение юзера:', t1) #выдача в консоль
             break
 
 
@@ -273,7 +276,7 @@ def kpop_sticker(message: Message):
     for word in STICKER_ID:
         if str(word) in model.kpopstdata:
             bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
-            print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
+            #print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
             break    
 
 
