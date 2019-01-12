@@ -265,12 +265,6 @@ def stop_kpop(message: Message):
     if message.chat.id in model.kpopchats:
         model.kpopchats.remove(message.chat.id)
         bot.send_message(message.chat.id, 'Слежение за IQ остановлено')
-#стоп пока что не работает 
-# @bot.message_handler(commands=['stop_kpop'])
-# def stopkpop(message: Message):
-#     bot.send_message(message.chat.id, 'Ладно, ладно... Не буду хуесоить к-поп в течении 30 минут.')
-#     t = Timer(1800)
-#     t.start()
 
 
 #Парсер Стикеров:
@@ -299,12 +293,13 @@ def kpop(message: Message):
 
 @bot.message_handler(content_types=['sticker'])    
 def kpop_sticker(message: Message):
-    STICKER_ID = [message.sticker.file_id] #id стикера который к нам приходит 
-    for word in STICKER_ID:
-        if str(word) in model.kpopstdata:
-            print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
-            bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
-            break    
+    if message.chat.id in model.kpopchats:
+        STICKER_ID = [message.sticker.file_id] #id стикера который к нам приходит 
+        for word in STICKER_ID:
+            if str(word) in model.kpopstdata:
+                print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
+                bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
+                break    
 
 
 
