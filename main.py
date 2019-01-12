@@ -29,10 +29,6 @@ class Model(): # класс в котором храннятся все данн
     hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
     helloFile.close()
     msg = mclass.MessWork('Usrs')
-    #Вот это под вопросом:
-    #kpopFille = open('k-pop.txt')
-    #kpopdata = kpopFille.readlines()
-    #kpopFille.close()
     kpopdata = ['KPOP', 'кпопу','К-поп', 'к-поп', 'кпоп', 'k-pop', 'K-pop', 'КПОП', 'К-ПОП', 'Кпоп']
     kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
     kpopans = kpopFille.readlines()
@@ -73,40 +69,45 @@ def start(message: Message):
     hellotext = hello.readline()
     bot.send_message(message.chat.id, hellotext)
     hello.close()
+
 @bot.message_handler(commands=['joke'])
 def joke(message: Message):
     soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
     JOKE = soup.find(class_="text").contents[0].contents[0].contents[0]
-    #print('Шутка: ', JOKE) #выдача в консоль
+    print('Шутка: ', JOKE) #выдача в консоль
     bot.send_message(message.chat.id, JOKE)
-
 
 @bot.message_handler(commands=['fact'])
 def fact(message: Message):
     soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
     FACT = soup_f.find(class_="text").contents[0].contents[0].contents[0]
-    #print('Факт: ', FACT) #выдача в консоль
+    print('Факт: ', FACT) #выдача в консоль
     bot.send_message(message.chat.id, FACT)
-
 
 @bot.message_handler(commands=['pubg'])
 def pubg(message: Message):
     PUBG = model.getAmount()
-    #print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
+    print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
     bot.send_message(message.chat.id,'Текущий онлайн в PUBG: ' + PUBG)
 
 
 @bot.message_handler(commands=['btc'])
 def btc(message: Message):
     BTC = model.getAmountBTC()
-    #print('Курс битка: ', BTC, ' $') #выдача в консоль
+    print('Курс битка: ', BTC, ' $') #выдача в консоль
     bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $')
 
 
 @bot.message_handler(commands=['ua'])
 def slavaukraine(message: Message):
-    #print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
-    bot.send_message(message.chat.id, 'Героям слава!')
+    print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
+    bot.send_message(message.chat.id, 'Слава Україні!')
+@bot.message_handler(content_types=['text'])
+@bot.edited_message_handler(content_types=['text'])
+def geroyamslava(message: Message):
+    if message.text == 'Героям слава!':
+        print('ОБНАРУЖЕН ХОХОЛ ПОДТВЕРЖЕН! ВОТ ОН: @', message.from_user.username) #выдача в консоль
+        bot.send_message(message.chat.id, 'Смерть ворогам!')
 
 @bot.message_handler(commands=['getIn'])
 def getinchat(message: Message):
@@ -236,8 +237,7 @@ def tom(message):
     else:
         msg = bot.reply_to(message, 'ник должен начинаться с @')
         bot.register_next_step_handler(msg, tom)
-#проверки по массиву еще нет
-#нужно научить этого придурка работать в конфе
+
 #стоп пока что не работает 
 # @bot.message_handler(commands=['stop_kpop'])
 # def stopkpop(message: Message):
@@ -265,8 +265,8 @@ def kpop(message: Message):
     for word in t2:
         if str(word) in model.kpopdata:
             bot.send_message(message.chat.id, model.kpopans[rn]) 
-            #print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
-            #print('Сообщение юзера:', t1) #выдача в консоль
+            print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
+            print('Сообщение юзера:', t1) #выдача в консоль
             break
 
 
@@ -276,7 +276,7 @@ def kpop_sticker(message: Message):
     for word in STICKER_ID:
         if str(word) in model.kpopstdata:
             bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
-            #print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
+            print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
             break    
 
 
