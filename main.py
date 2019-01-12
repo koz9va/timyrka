@@ -9,7 +9,7 @@ from datetime import datetime
 import requests
 import mclass
 
-TOKEN = '771027063:AAHjnTSc5uH5BapuPAHsHwuKiN7VaQludzc' #токен бота
+TOKEN = 'YOURTOKEN' #токен бота
 bot = telebot.TeleBot(TOKEN)
 USERS = set()
 
@@ -25,9 +25,6 @@ class Model(): # класс в котором храннятся все данн
     # в следующей строке делаем запрос на сайт с количеством игроков и скрапим его через beautiful soup
     pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     btcusd = getJsonVal('https://api.coindesk.com/v1/bpi/currentprice.json', ('bpi', 'USD', 'rate'))
-    helloFile = open('hello.txt', 'r')
-    hellodata = helloFile.readlines() # открывем файл и создаём массив со строками приветствия
-    helloFile.close()
     msg = mclass.MessWork('Usrs')
     kpopdata = ['KPOP', 'кпопу','К-поп', 'к-поп', 'кпоп', 'k-pop', 'K-pop', 'КПОП', 'К-ПОП', 'Кпоп']
     kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
@@ -65,24 +62,43 @@ model = Model() # создаём модель
 
 @bot.message_handler(commands=['startua'])
 def start(message: Message):
-    startua = open('startua.txt', 'r')
+    startua = open('startua.txt', 'r', encoding='utf-8')
     startua1 = startua.readline()
     bot.send_message(message.chat.id, startua1)
     startua.close()
 
+
 @bot.message_handler(commands=['start'])
 def start(message: Message):
-    startru = open('startru.txt', 'r')
+    startru = open('startru.txt', 'r', encoding='utf-8')
     startru1 = startru.readline()
     bot.send_message(message.chat.id, startru1)
     startru.close() 
 
+
 @bot.message_handler(commands=['help'])
-def start(message: Message):
-    helptxt = open('help.txt', 'r')
-    helptxt1 = helptxt.readline()
-    bot.send_message(message.chat.id, helptxt1)
-    helptxt.close()        
+def c_help(message: Message):
+    print('Пользователь @', message.from_user.username, 'запросил помощь.') #выдача в консоль
+    bot.send_message(message.chat.id, 'Список команд:\n'
+    '/start - Приветсвие\n'
+    '/help - Помощь\n'
+    '/getin - Регистрация для приема/отправки анонимных сообщений\n'
+    '/send - Отправка анонимных сообщений\n'
+    '/reply - Команда для ответа на анонимное сообщение\n'
+    '/block - Команда для блокировки анонимного отправителя\n'
+    '/joke - Dolbobot пошутит\n'
+    '/fact - Dolbobot поделится фактом\n'
+    '/pubg - Текущий онлайн в ПУБГ\n'
+    '/btc - Курс Bitcoin\n')       
+
+
+@bot.message_handler(commands=['fact'])
+def fact(message: Message):
+    soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
+    FACT = soup_f.find(class_="text").contents[0].contents[0].contents[0]
+    print('Факт: ', FACT) #выдача в консоль
+    bot.send_message(message.chat.id, FACT)
+
 
 @bot.message_handler(commands=['joke'])
 def joke(message: Message):
@@ -91,12 +107,6 @@ def joke(message: Message):
     print('Шутка: ', JOKE) #выдача в консоль
     bot.send_message(message.chat.id, JOKE)
 
-@bot.message_handler(commands=['fact'])
-def fact(message: Message):
-    soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
-    FACT = soup_f.find(class_="text").contents[0].contents[0].contents[0]
-    print('Факт: ', FACT) #выдача в консоль
-    bot.send_message(message.chat.id, FACT)
 
 @bot.message_handler(commands=['pubg'])
 def pubg(message: Message):
@@ -112,18 +122,8 @@ def btc(message: Message):
     bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $')
 
 
-@bot.message_handler(commands=['ua'])
-def slavaukraine(message: Message):
-    print('ОБНАРУЖЕН ХОХОЛ В ЧАТЕ!') #выдача в консоль
-    bot.send_message(message.chat.id, 'Слава Україні!')
-@bot.message_handler(content_types=['text'])
-@bot.edited_message_handler(content_types=['text'])
-def geroyamslava(message: Message):
-    if message.text == 'Героям слава!':
-        print('ОБНАРУЖЕН ХОХОЛ ПОДТВЕРЖЕН! ВОТ ОН: @', message.from_user.username) #выдача в консоль
-        bot.send_message(message.chat.id, 'Смерть ворогам!')
 
-@bot.message_handler(commands=['getIn'])
+@bot.message_handler(commands=['getin'])
 def getinchat(message: Message):
     if message.chat.type == 'private':
         notadd = False
@@ -156,7 +156,7 @@ def accept0(message: Message):
         for usr in model.msg.Users: # нужно придумать как убрать это прожордивое безобразие
             if '@'+str(message.from_user.username) == usr.name:
                 usr.blocked.append(usr.last)
-                bot.send_message(message.chat.id, 'Пользователь '+ usr.lastName+' заблокирован.')
+                bot.send_message(message.chat.id, 'пользователь '+ usr.lastName+' заблокирован')
                 model.msg.save()
     else:
         bot.send_message(message.chat.id, 'Ок')
@@ -165,11 +165,11 @@ def replyTo(message: Message):
     if message.chat.type == 'private':
         for usr in model.msg.Users:
             if '@'+str(message.from_user.username) == usr.name:
-                msg = bot.reply_to(message, 'Чтобы ответить '+usr.lastName+' напишите Y, в другом случае всё остальное')
+                msg = bot.reply_to(message, 'чтобы ответить '+usr.lastName+' напишите Y, в другом случае всё остальное')
                 bot.register_next_step_handler(msg, nextreply0)
                 break
     else:
-        bot.reply_to(message, 'Не палися, всі ж дивляться!')
+        bot.reply_to(message, 'не палися, всі ж дивляться')
 def nextreply0(message: Message):
     for usr in model.msg.Users:
         if '@'+str(message.from_user.username) == usr.name:
@@ -190,7 +190,7 @@ def unblock(message: Message):
                 #print(u+'\n' for u in usr.blocked)
                 break
     else:
-        bot.reply_to(message, 'Не палися, всі ж дивляться')
+        bot.reply_to(message, 'не палися, всі ж дивляться')
 
 @bot.message_handler(commands=['send'])
 def sendMess(message: Message):
@@ -198,11 +198,11 @@ def sendMess(message: Message):
         msg = bot.reply_to(message, 'Адресат:')
         bot.register_next_step_handler(msg, tom)
     else:
-        bot.reply_to(message, 'Не палися, всі ж дивляться')
+        bot.reply_to(message, 'не палися, всі ж дивляться')
 
 def auth(message):
     if len(str(message.text)) > 20:
-        msg = bot.reply_to(message, 'Не более 20 символов!')
+        msg = bot.reply_to(message, 'не больше 20 символов')
         bot.register_next_step_handler(msg ,auth)
     else:
         for usr in model.msg.Users:
@@ -229,7 +229,7 @@ def auth(message):
 
 def textm(message):
     if len(str(message.text)) > 300:
-        msg = bot.reply_to(message, 'Не более 300 символов!')
+        msg = bot.reply_to(message, 'не больше 300 символов')
         bot.register_next_step_handler(msg , textm)
     else:
         for usr in model.msg.Users:
@@ -249,7 +249,7 @@ def tom(message):
         msg = bot.reply_to(message, 'Послание: ')
         bot.register_next_step_handler(msg, textm)
     else:
-        msg = bot.reply_to(message, 'Ник должен начинаться с @')
+        msg = bot.reply_to(message, 'ник должен начинаться с @')
         bot.register_next_step_handler(msg, tom)
 
 #стоп пока что не работает 
@@ -278,9 +278,9 @@ def kpop(message: Message):
     t2 = t1.split(' ')
     for word in t2:
         if str(word) in model.kpopdata:
-            bot.send_message(message.chat.id, model.kpopans[rn]) 
             print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
             print('Сообщение юзера:', t1) #выдача в консоль
+            bot.send_message(message.chat.id, model.kpopans[rn]) 
             break
 
 
@@ -289,8 +289,8 @@ def kpop_sticker(message: Message):
     STICKER_ID = [message.sticker.file_id] #id стикера который к нам приходит 
     for word in STICKER_ID:
         if str(word) in model.kpopstdata:
-            bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
             print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
+            bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
             break    
 
 
