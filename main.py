@@ -55,7 +55,6 @@ class Model(): # класс в котором храннятся все данн
                     return False
                 else:
                     bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text)
-                    bot.send_message(usr.chat.id, 'Вы всегда можете заблокировать этого бользователя /block')
                     usr.last = cmsg.author
                     usr.lastName = cmsg.authName
                     with open('messages.txt', 'a') as messStore:
