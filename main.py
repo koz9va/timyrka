@@ -31,6 +31,7 @@ class Model(): # класс в котором храннятся все данн
     kpopans = kpopFille.readlines()
     kpopFille.close()
     kpopstdata = []
+    kpopchats = []
     with open('kpop_sticker_id.txt') as f:
         kpopstdata = f.read().splitlines()
     def updatesoap(self): # метод который обновляет количество игроков
@@ -61,7 +62,7 @@ class Model(): # класс в котором храннятся все данн
 model = Model() # создаём модель
 
 @bot.message_handler(commands=['startua'])
-def start(message: Message):
+def startua(message: Message):
     startua = open('startua.txt', 'r', encoding='utf-8')
     startua1 = startua.readline()
     bot.send_message(message.chat.id, startua1)
@@ -73,7 +74,8 @@ def start(message: Message):
     startru = open('startru.txt', 'r', encoding='utf-8')
     startru1 = startru.readline()
     bot.send_message(message.chat.id, startru1)
-    startru.close() 
+    startru.close()
+    model.kpopchats.append(message.chat.id)
 
 
 @bot.message_handler(commands=['help'])
@@ -252,6 +254,17 @@ def tom(message):
         msg = bot.reply_to(message, 'ник должен начинаться с @')
         bot.register_next_step_handler(msg, tom)
 
+
+@bot.message_handler(commands=['start_kpop'])
+def start_kpop(message: Message):
+    if message.chat.id not in model.kpopchats:
+        model.kpopchats.append(message.chat.id)
+        bot.send_message(message.chat.id, 'Cлежение за IQ восстановлено')
+@bot.message_handler(commands=['stop_kpop'])
+def stop_kpop(message: Message):
+    if message.chat.id in model.kpopchats:
+        model.kpopchats.remove(message.chat.id)
+        bot.send_message(message.chat.id, 'Слежение за IQ остановлено')
 #стоп пока что не работает 
 # @bot.message_handler(commands=['stop_kpop'])
 # def stopkpop(message: Message):
@@ -272,17 +285,17 @@ def tom(message):
 @bot.message_handler(content_types=['text'])
 @bot.edited_message_handler(content_types=['text'])
 def kpop(message: Message):
-    rn1 = len(model.kpopans) - 1 #питон счет строк начинается с нуля, поэтому нужно прописать -1 
-    rn = random.randint(0, rn1) #генерим номер строки
-    t1 = message.text
-    t2 = t1.split(' ')
-    for word in t2:
-        if str(word) in model.kpopdata:
-            print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
-            print('Сообщение юзера:', t1) #выдача в консоль
-            bot.send_message(message.chat.id, model.kpopans[rn]) 
-            break
-
+    if message.chat.id in model.kpopchats:
+        rn1 = len(model.kpopans) - 1 #питон счет строк начинается с нуля, поэтому нужно прописать -1 
+        rn = random.randint(0, rn1) #генерим номер строки
+        t1 = message.text
+        t2 = t1.split(' ')
+        for word in t2:
+            if str(word) in model.kpopdata:
+                print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
+                print('Сообщение юзера:', t1) #выдача в консоль
+                bot.send_message(message.chat.id, model.kpopans[rn]) 
+                break
 
 @bot.message_handler(content_types=['sticker'])    
 def kpop_sticker(message: Message):
