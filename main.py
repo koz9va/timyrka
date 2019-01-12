@@ -63,12 +63,26 @@ class Model(): # класс в котором храннятся все данн
         return False
 model = Model() # создаём модель
 
-@bot.message_handler(commands=['start', 'help'])
+@bot.message_handler(commands=['startua'])
 def start(message: Message):
-    hello = open('hello.txt', 'r')
-    hellotext = hello.readline()
-    bot.send_message(message.chat.id, hellotext)
-    hello.close()
+    startua = open('startua.txt', 'r')
+    startua1 = startua.readline()
+    bot.send_message(message.chat.id, startua1)
+    startua.close()
+
+@bot.message_handler(commands=['start'])
+def start(message: Message):
+    startru = open('startru.txt', 'r')
+    startru1 = startru.readline()
+    bot.send_message(message.chat.id, startru1)
+    startru.close() 
+
+@bot.message_handler(commands=['help'])
+def start(message: Message):
+    helptxt = open('help.txt', 'r')
+    helptxt1 = helptxt.readline()
+    bot.send_message(message.chat.id, helptxt1)
+    helptxt.close()        
 
 @bot.message_handler(commands=['joke'])
 def joke(message: Message):
@@ -142,7 +156,7 @@ def accept0(message: Message):
         for usr in model.msg.Users: # нужно придумать как убрать это прожордивое безобразие
             if '@'+str(message.from_user.username) == usr.name:
                 usr.blocked.append(usr.last)
-                bot.send_message(message.chat.id, 'пользователь '+ usr.lastName+' заблокирован')
+                bot.send_message(message.chat.id, 'Пользователь '+ usr.lastName+' заблокирован.')
                 model.msg.save()
     else:
         bot.send_message(message.chat.id, 'Ок')
@@ -151,11 +165,11 @@ def replyTo(message: Message):
     if message.chat.type == 'private':
         for usr in model.msg.Users:
             if '@'+str(message.from_user.username) == usr.name:
-                msg = bot.reply_to(message, 'чтобы ответить '+usr.lastName+' напишите Y, в другом случае всё остальное')
+                msg = bot.reply_to(message, 'Чтобы ответить '+usr.lastName+' напишите Y, в другом случае всё остальное')
                 bot.register_next_step_handler(msg, nextreply0)
                 break
     else:
-        bot.reply_to(message, 'не палися, всі ж дивляться')
+        bot.reply_to(message, 'Не палися, всі ж дивляться!')
 def nextreply0(message: Message):
     for usr in model.msg.Users:
         if '@'+str(message.from_user.username) == usr.name:
@@ -176,7 +190,7 @@ def unblock(message: Message):
                 #print(u+'\n' for u in usr.blocked)
                 break
     else:
-        bot.reply_to(message, 'не палися, всі ж дивляться')
+        bot.reply_to(message, 'Не палися, всі ж дивляться')
 
 @bot.message_handler(commands=['send'])
 def sendMess(message: Message):
@@ -184,11 +198,11 @@ def sendMess(message: Message):
         msg = bot.reply_to(message, 'Адресат:')
         bot.register_next_step_handler(msg, tom)
     else:
-        bot.reply_to(message, 'не палися, всі ж дивляться')
+        bot.reply_to(message, 'Не палися, всі ж дивляться')
 
 def auth(message):
     if len(str(message.text)) > 20:
-        msg = bot.reply_to(message, 'не больше 20 символов')
+        msg = bot.reply_to(message, 'Не более 20 символов!')
         bot.register_next_step_handler(msg ,auth)
     else:
         for usr in model.msg.Users:
@@ -215,7 +229,7 @@ def auth(message):
 
 def textm(message):
     if len(str(message.text)) > 300:
-        msg = bot.reply_to(message, 'не больше 300 символов')
+        msg = bot.reply_to(message, 'Не более 300 символов!')
         bot.register_next_step_handler(msg , textm)
     else:
         for usr in model.msg.Users:
@@ -235,7 +249,7 @@ def tom(message):
         msg = bot.reply_to(message, 'Послание: ')
         bot.register_next_step_handler(msg, textm)
     else:
-        msg = bot.reply_to(message, 'ник должен начинаться с @')
+        msg = bot.reply_to(message, 'Ник должен начинаться с @')
         bot.register_next_step_handler(msg, tom)
 
 #стоп пока что не работает 
@@ -293,7 +307,7 @@ def timers():
         model.msg.TooUsers[usr][1] -= 1
 if __name__ == '__main__': # проверка на прямой запуск файла, то есть если добавить его через import эти комманды не будут выполнены
 
-    threading.Timer(300 , callbacks).start()# запуск периодических функцый в отдельном потоке
+    threading.Timer(300 , callbacks).start()# запуск периодических функций в отдельном потоке
     threading.Timer(1, timers)
     bot.polling() # сам запуск бота
 
