@@ -48,25 +48,21 @@ class Model(): # класс в котором храннятся все данн
                 if cmsg.author in usr.blocked:
                     return False
                 else:
-                    bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text+ '\n Чтобы заблокировать этого пользователя /block , чтобы ответить /reply')
+                        bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text+ '\n Чтобы заблокировать этого пользователя /block , чтобы ответить /reply')
                     usr.last = cmsg.author
                     usr.lastName = cmsg.authName
                     with open('messages.txt', 'a') as messStore:
                         messStore.write('\n##########\n')
                         messStore.write('From '+usr.lastM.author+' as '+usr.lastM.authName+' , To: ' + usr.lastM.To+'\n')
-                        messStore.write('Text: '+usr.lastM.text)
+                        messStore.write('Text: '+usr.lastM.text+'\n')
+                        currentDT = datetime.now()
+                        currentDT = currentDT.strftime("%Y-%m-%d %H:%M:%S")
+                        messStore.write('Date: '+currentDT)
                         messStore.close()
                     model.msg.save()
                     return True
         return False
 model = Model() # создаём модель
-
-@bot.message_handler(commands=['startua'])
-def startua(message: Message):
-    startua = open('startua.txt', 'r', encoding='utf-8')
-    startua1 = startua.readline()
-    bot.send_message(message.chat.id, startua1)
-    startua.close()
 
 
 @bot.message_handler(commands=['start'])
@@ -128,21 +124,24 @@ def btc(message: Message):
 @bot.message_handler(commands=['getin'])
 def getinchat(message: Message):
     if message.chat.type == 'private':
-        notadd = False
-        for user in model.msg.Users:
-            #print(user.name)
-            if str(user.name) == '@'+str(message.from_user.username):
-                notadd = True
-                break
-        if notadd == False:
-            model.msg.start(mclass.User(message.chat.id, message.from_user.username))
-            bot.send_message(message.chat.id, '@'+str(message.from_user.username)+' теперь может принимать сообщения')
-            #print(message.chat.id)
-            #print('@'+message.from_user.username)
+        if message.from_user.username is None:
+            bot.send_message(message.chat.id, 'Отсутствует имя пользователя. Пожалуйста, создайте его!')
         else:
-            bot.send_message(message.chat.id, 'Вы уже зарегестрированы')
+            notadd = False
+            for user in model.msg.Users:
+                # print(user.name)
+                if str(user.name) == '@'+str(message.from_user.username):
+                    notadd = True
+                    break
+            if notadd == False:
+                model.msg.start(mclass.User(message.chat.id, str(message.from_user.username)))
+                bot.send_message(message.chat.id, '@'+str(message.from_user.username)+' теперь может принимать сообщения.')
+                print(message.chat.id)
+                print('@'+message.from_user.username)
+            else:
+                bot.send_message(message.chat.id, 'Вы уже зарегестрированы')
     else:
-        bot.reply_to(message, 'не палися, всі ж дивляться')
+        bot.reply_to(message, 'Не советую использовать эту функцию в публичном чате.')
 @bot.message_handler(commands=['block'])
 def ask0(message: Message):
     if message.chat.type == 'private':
@@ -152,13 +151,13 @@ def ask0(message: Message):
                 bot.register_next_step_handler(msg, accept0)
                 break
     else:
-        bot.reply_to(message, 'не палися, всі ж дивляться')
+        bot.reply_to(message, 'Не советую использовать эту функцию в публичном чате.')
 def accept0(message: Message):
     if str(message.text) == 'Y':
         for usr in model.msg.Users: # нужно придумать как убрать это прожордивое безобразие
             if '@'+str(message.from_user.username) == usr.name:
                 usr.blocked.append(usr.last)
-                bot.send_message(message.chat.id, 'пользователь '+ usr.lastName+' заблокирован')
+                bot.send_message(message.chat.id, 'Пользователь '+ usr.lastName+' заблокирован.')
                 model.msg.save()
     else:
         bot.send_message(message.chat.id, 'Ок')
@@ -167,11 +166,11 @@ def replyTo(message: Message):
     if message.chat.type == 'private':
         for usr in model.msg.Users:
             if '@'+str(message.from_user.username) == usr.name:
-                msg = bot.reply_to(message, 'чтобы ответить '+usr.lastName+' напишите Y, в другом случае всё остальное')
+                msg = bot.reply_to(message, 'Чтобы ответить '+usr.lastName+' напишите Y. Если не хотите отвечать - проигнорируйте просьбу.')
                 bot.register_next_step_handler(msg, nextreply0)
                 break
     else:
-        bot.reply_to(message, 'не палися, всі ж дивляться')
+        bot.reply_to(message, 'Не советую использовать эту функцию в публичном чате.')
 def nextreply0(message: Message):
     for usr in model.msg.Users:
         if '@'+str(message.from_user.username) == usr.name:
@@ -181,7 +180,7 @@ def nextreply0(message: Message):
                 bot.register_next_step_handler(msg, textm)
                 break
             else:
-                bot.send_message(message.chat.id, 'Ок')
+                bot.send_message(message.chat.id, 'Ок.')
 
 @bot.message_handler(commands=['unblock'])
 def unblock(message: Message):
@@ -189,10 +188,10 @@ def unblock(message: Message):
         for usr in model.msg.Users:
             if usr.name == '@'+message.from_user.username:
                 bot.send_message(message.chat.id, 'Вы заблокировали: \n'+ str(u+'\n' for u in usr.blocked))
-                #print(u+'\n' for u in usr.blocked)
+                ##print(u+'\n' for u in usr.blocked)
                 break
     else:
-        bot.reply_to(message, 'не палися, всі ж дивляться')
+        bot.reply_to(message, 'Не советую использовать эту функцию в публичном чате.')
 
 @bot.message_handler(commands=['send'])
 def sendMess(message: Message):
@@ -200,38 +199,38 @@ def sendMess(message: Message):
         msg = bot.reply_to(message, 'Адресат:')
         bot.register_next_step_handler(msg, tom)
     else:
-        bot.reply_to(message, 'не палися, всі ж дивляться')
+        bot.reply_to(message, 'Не советую использовать эту функцию в публичном чате.')
 
 def auth(message):
     if len(str(message.text)) > 20:
-        msg = bot.reply_to(message, 'не больше 20 символов')
+        msg = bot.reply_to(message, 'Не более 20 символов!')
         bot.register_next_step_handler(msg ,auth)
     else:
         for usr in model.msg.Users:
             if usr.name == '@'+message.from_user.username:
                 usr.lastM.authName = message.text
                 usr.lastM.author = message.from_user.username
-                if usr.sentToUsr < 10:
-                    if usr.lastM.To not in usr.sentUsrs:
-                        usr.sentUsrs.append(message.text)
-                        usr.sentToUsr += 1
+                if True:
+                    # if usr.lastM.To not in usr.sentUsrs:
+                    #     usr.sentUsrs.append(message.text)
+                    #     usr.sentToUsr += 1
                     if model.sendTo(usr.lastM) == False:
-                        bot.send_message(message.chat.id, 'Этот пользователь заблокировал вас, или вы непрввильно указали ник, или этот пользователь не зарегистрирован в нашей системе')
+                        bot.send_message(message.chat.id, 'Этот пользователь заблокировал вас или вы непрввильно указали ник. Возможно этот пользователь не зарегистрирован в нашей системе.')
                     else:
-                        bot.send_message(message.chat.id, 'Сообщение отправлено')
-                else:
-                    inlist = False
-                    for tousr in model.msg.TooUsers:
-                        if tousr[0] == message.from_user.username:
-                            inlist = True
-                            break
-                    if not inlist:
-                        model.msg.TooUsers.append([message.from_user.username, 300])    
-                    bot.send_message(message.chat.id, 'Вы уже написали максимальному количеству пользователей, подождите максимум 5 минут')
+                        bot.send_message(message.chat.id, 'Сообщение отправлено!')
+               # else:
+                    # inlist = False
+                    # for tousr in model.msg.TooUsers:
+                    #     if tousr[0] == message.from_user.username:
+                    #         inlist = True
+                    #         break
+                    #  if not inlist:
+                    #     model.msg.TooUsers.append([message.from_user.username, 300])    
+                    # bot.send_message(message.chat.id, 'Вы уже написали максимальному количеству пользователей, подождите максимум 5 минут')
 
 def textm(message):
     if len(str(message.text)) > 300:
-        msg = bot.reply_to(message, 'не больше 300 символов')
+        msg = bot.reply_to(message, 'Не более 300 символов!')
         bot.register_next_step_handler(msg , textm)
     else:
         for usr in model.msg.Users:
@@ -251,20 +250,30 @@ def tom(message):
         msg = bot.reply_to(message, 'Послание: ')
         bot.register_next_step_handler(msg, textm)
     else:
-        msg = bot.reply_to(message, 'ник должен начинаться с @')
+        msg = bot.reply_to(message, 'Ник должен начинаться с "@"!')
         bot.register_next_step_handler(msg, tom)
+
+
+@bot.message_handler(commands=['notify'])
+def notif(message: Message):
+    if str(message.from_user.username) == 'koz9va' or str(message.from_user.username) == 'r4mpagelowe':
+        msg = bot.reply_to(message, 'Text of notification for all users:')
+        bot.register_next_step_handler(msg, notify)
+def notify(message):
+    for user in model.msg.Users:
+        bot.send_message(user.chatId, message.text)
 
 
 @bot.message_handler(commands=['start_kpop'])
 def start_kpop(message: Message):
     if message.chat.id not in model.kpopchats:
         model.kpopchats.append(message.chat.id)
-        bot.send_message(message.chat.id, 'Cлежение за IQ восстановлено')
+        bot.send_message(message.chat.id, 'Cлежение за IQ восстановлено!')
 @bot.message_handler(commands=['stop_kpop'])
 def stop_kpop(message: Message):
     if message.chat.id in model.kpopchats:
         model.kpopchats.remove(message.chat.id)
-        bot.send_message(message.chat.id, 'Слежение за IQ остановлено')
+        bot.send_message(message.chat.id, 'Слежение за IQ остановлено!')
 
 
 #Парсер Стикеров:
@@ -316,6 +325,6 @@ def timers():
 if __name__ == '__main__': # проверка на прямой запуск файла, то есть если добавить его через import эти комманды не будут выполнены
 
     threading.Timer(300 , callbacks).start()# запуск периодических функций в отдельном потоке
-    threading.Timer(1, timers)
+#    threading.Timer(1, timers)
     bot.polling() # сам запуск бота
 
