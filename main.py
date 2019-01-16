@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import requests
 import mclass
+import urllib.request
 
 TOKEN = 'YOURTOKEN' #токен бота
 bot = telebot.TeleBot(TOKEN)
@@ -26,12 +27,14 @@ class Model(): # класс в котором храннятся все данн
     pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     btcusd = getJsonVal('https://api.coindesk.com/v1/bpi/currentprice.json', ('bpi', 'USD', 'rate'))
     msg = mclass.MessWork('Usrs')
-    kpopdata = ['KPOP', 'кпопу','К-поп', 'к-поп', 'кпоп', 'k-pop', 'K-pop', 'КПОП', 'К-ПОП', 'Кпоп']
+    kpopdata = ['KPOP', 'кпопу', 'К-поп', 'к-поп', 'кпоп', 'k-pop', 'K-pop', 'КПОП', 'К-ПОП', 'Кпоп', 'BTS', 'BTs', 'bTS', 'bts', 'b.t.s', 'Ким Намджун', 'Намджун', 'корейский поп', 'к.п.о.п', 'Ким Техен', 'Ким Техён', 'Техен', 'кпоа', 'кпоп']
     kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
     kpopans = kpopFille.readlines()
     kpopFille.close()
     kpopstdata = []
-    kpopchats = []
+    kpopchats_blacklist = []
+    all_chats_id = []
+    emili_trig = [2, 4, 8]
     with open('kpop_sticker_id.txt') as f:
         kpopstdata = f.read().splitlines()
     def updatesoap(self): # метод который обновляет количество игроков
@@ -48,7 +51,7 @@ class Model(): # класс в котором храннятся все данн
                 if cmsg.author in usr.blocked:
                     return False
                 else:
-                        bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text+ '\n Чтобы заблокировать этого пользователя /block , чтобы ответить /reply')
+                    bot.send_message(usr.chatId, 'От '+ cmsg.authName+': '+cmsg.text+ '\n Чтобы заблокировать этого пользователя /block , чтобы ответить /reply')
                     usr.last = cmsg.author
                     usr.lastName = cmsg.authName
                     with open('messages.txt', 'a') as messStore:
@@ -67,11 +70,10 @@ model = Model() # создаём модель
 
 @bot.message_handler(commands=['start'])
 def start(message: Message):
-    startru = open('startru.txt', 'r', encoding='utf-8')
+    startru = open('start.txt', 'r', encoding='utf-8')
     startru1 = startru.readline()
     bot.send_message(message.chat.id, startru1)
     startru.close()
-    model.kpopchats.append(message.chat.id)
 
 
 @bot.message_handler(commands=['help'])
@@ -87,7 +89,8 @@ def c_help(message: Message):
     '/joke - Dolbobot пошутит\n'
     '/fact - Dolbobot поделится фактом\n'
     '/pubg - Текущий онлайн в ПУБГ\n'
-    '/btc - Курс Bitcoin\n')       
+    '/btc - Курс Bitcoin\n'
+    '/binary - Перевод чисел из десятичной системы счисления в двоичную.')       
 
 
 @bot.message_handler(commands=['fact'])
@@ -117,8 +120,32 @@ def pubg(message: Message):
 def btc(message: Message):
     BTC = model.getAmountBTC()
     print('Курс битка: ', BTC, ' $') #выдача в консоль
-    bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $')
+    bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $') 
 
+@bot.message_handler(commands=['binary'])
+def conv_to_binary(message: Message):
+    msgchid = message.chat.id
+    #print('Перевод в двоичную систему счисления.') #выдача в консоль
+    bot.send_message(message.chat.id, 'Введите натуральное число:')   
+    bot.register_next_step_handler(message, converter)
+def converter(message: Message):   
+    conv_data = message.text
+    if conv_data.isdigit() == True:    
+        conv = int(conv_data)
+        result = ''
+        while conv > 0:
+            y = str(conv % 2)
+            result = y + result
+            x = int(conv / 2)    
+        #print('10ССЧ:', int(conv_data), ' - 2ССЧ:', result)
+        bot.send_message(message.chat.id, 'Число ' + conv_data + ' в двоичной системе счисления: ' + result)
+    else:
+        bot.send_message(message.chat.id, 'Натуральное число не было получено!\n'
+         '/binary - для перезапуска функции.\n'
+         '/info_naturalis - информация о натуральных числах.')
+@bot.message_handler(commands=['info_naturalis'])
+def info_naturalis(message: Message):
+    bot.send_message(message.chat.id, 'Натуральные числа — числа, возникающие естественным образом при счёте. Последовательность всех натуральных чисел, расположенных в порядке возрастания, называется натуральным рядом. ')
 
 
 @bot.message_handler(commands=['getin'])
@@ -266,31 +293,46 @@ def notify(message):
 
 @bot.message_handler(commands=['start_kpop'])
 def start_kpop(message: Message):
-    if message.chat.id not in model.kpopchats:
-        model.kpopchats.append(message.chat.id)
+    if message.chat.id in model.kpopchats_blacklist:
+        model.kpopchats_blacklist.remove(message.chat.id)
         bot.send_message(message.chat.id, 'Cлежение за IQ восстановлено!')
 @bot.message_handler(commands=['stop_kpop'])
 def stop_kpop(message: Message):
-    if message.chat.id in model.kpopchats:
-        model.kpopchats.remove(message.chat.id)
+    if message.chat.id not in model.kpopchats_blacklist:
+        model.kpopchats_blacklist.append(message.chat.id)
         bot.send_message(message.chat.id, 'Слежение за IQ остановлено!')
 
+"""
+Парсер Стикеров:
+@bot.message_handler(content_types=['sticker'])
+def sticker_handler(message: Message):
+    id = message.sticker.file_id
+    print(id)
+    g = open('файл.txt', 'a', encoding='utf-8')
+    g.write('\n' + id)
+    g.close()
+"""
 
-#Парсер Стикеров:
-#@bot.message_handler(content_types=['sticker'])
-#def sticker_handler(message: Message):
-#    id = message.sticker.file_id
-#    #print(id)
-#    g = open('файл.txt', 'a', encoding='utf-8')
-#    g.write('\n' + id)
-#    g.close()
+"""
+@bot.message_handler(content_types=['text'])
+@bot.edited_message_handler(content_types=['text'])
+def all_message_handler(message: Message):
+    if message.chat.id not in model.all_chats_id:
+        model.all_chats_id.append(message.chat.id)
+    else:
+    pass 
 
+@bot.message_handler(commands=['allchatsid'])
+def all_chats_id(message: Message):
+    if str(message.from_user.username) == 'koz9va' or str(message.from_user.username) == 'r4mpagelowe':
+        acid = model.all_chats_id.split('\n')
+        bot.send_message(message.chat.id, 'ID чатов, в которых используется бот:', acid)        
+"""
 @bot.message_handler(content_types=['text'])
 @bot.edited_message_handler(content_types=['text'])
 def kpop(message: Message):
-    if message.chat.id in model.kpopchats:
-        rn1 = len(model.kpopans) - 1 #питон счет строк начинается с нуля, поэтому нужно прописать -1 
-        rn = random.randint(0, rn1) #генерим номер строки
+    if message.chat.id not in model.kpopchats_blacklist:
+        rn = random.randint(0, 8) #генерим номер строки
         t1 = message.text
         t2 = t1.split(' ')
         for word in t2:
@@ -299,10 +341,15 @@ def kpop(message: Message):
                 print('Сообщение юзера:', t1) #выдача в консоль
                 bot.send_message(message.chat.id, model.kpopans[rn]) 
                 break
+        if str(message.from_user.username) == 'emilichkaaaaaa':
+            emili = random.randint(0, 9)
+            em = random.randint(10, 13) #генерим номер строки
+            if emili in emili_trig:
+                bot.reply_to(message, model.kpopans[em])       
 
 @bot.message_handler(content_types=['sticker'])    
 def kpop_sticker(message: Message):
-    if message.chat.id in model.kpopchats:
+    if message.chat.id not in model.kpopchats_blacklist:
         STICKER_ID = [message.sticker.file_id] #id стикера который к нам приходит 
         for word in STICKER_ID:
             if str(word) in model.kpopstdata:
