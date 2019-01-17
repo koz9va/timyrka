@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import requests
 import mclass
+import json
 import urllib.request
 
 TOKEN = 'YOURTOKEN' #токен бота
@@ -35,6 +36,9 @@ class Model(): # класс в котором храннятся все данн
     kpopchats_blacklist = []
     all_chats_id = []
     emili_trig = [2, 4, 8]
+    now = datetime.now()
+    now_massiv = [now.day, now.month, now.year]
+    fixerdt = [0, 0, 0, 0]    
     with open('kpop_sticker_id.txt') as f:
         kpopstdata = f.read().splitlines()
     def updatesoap(self): # метод который обновляет количество игроков
@@ -75,10 +79,9 @@ def start(message: Message):
     bot.send_message(message.chat.id, startru1)
     startru.close()
 
-
 @bot.message_handler(commands=['help'])
 def c_help(message: Message):
-    print('Пользователь @', message.from_user.username, 'запросил помощь.') #выдача в консоль
+    #print('Пользователь @', message.from_user.username, 'запросил помощь.') #выдача в консоль
     bot.send_message(message.chat.id, 'Список команд:\n'
     '/start - Приветсвие\n'
     '/help - Помощь\n'
@@ -89,6 +92,7 @@ def c_help(message: Message):
     '/joke - Dolbobot пошутит\n'
     '/fact - Dolbobot поделится фактом\n'
     '/pubg - Текущий онлайн в ПУБГ\n'
+    '/rates - Курсы валют\n'
     '/btc - Курс Bitcoin\n'
     '/binary - Перевод чисел из десятичной системы счисления в двоичную.')       
 
@@ -97,34 +101,84 @@ def c_help(message: Message):
 def fact(message: Message):
     soup_f = BeautifulSoup(requests.get('https://randstuff.ru/fact/').text, features="html.parser")
     FACT = soup_f.find(class_="text").contents[0].contents[0].contents[0]
-    print('Факт: ', FACT) #выдача в консоль
+    #print('Факт: ', FACT) #выдача в консоль
     bot.send_message(message.chat.id, FACT)
-
-
 @bot.message_handler(commands=['joke'])
 def joke(message: Message):
     soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
     JOKE = soup.find(class_="text").contents[0].contents[0].contents[0]
-    print('Шутка: ', JOKE) #выдача в консоль
+    #print('Шутка: ', JOKE) #выдача в консоль
     bot.send_message(message.chat.id, JOKE)
-
 
 @bot.message_handler(commands=['pubg'])
 def pubg(message: Message):
     PUBG = model.getAmount()
-    print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
+    #print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
     bot.send_message(message.chat.id,'Текущий онлайн в PUBG: ' + PUBG)
-
 
 @bot.message_handler(commands=['btc'])
 def btc(message: Message):
     BTC = model.getAmountBTC()
-    print('Курс битка: ', BTC, ' $') #выдача в консоль
+    #print('Курс битка: ', BTC, ' $') #выдача в консоль
     bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $') 
+@bot.message_handler(commands=['rates'])
+def rates(message: Message):
+    #такое ебанутое разветление дальше обусловлено тем, что курсі валют особо не меняются в течении одного дня
+    #также API данного сервиса по фри тарифу дает только 1000 запросов в месяц
+    #если бот запущен на тесте, не используйте эту функцию просто так
+    #рассчитано на то, что бот будет наботать 24/7 и обновлять инфу о курсах валют только раз в сутки 
+    local_f_time=datetime.now() 
+    fd=local_f_time.day 
+    fm=local_f_time.month 
+    fy=local_f_time.year 
+    fdfmfy = [fd, fm, fy] 
+    if fdfmfy == model.now_massiv and model.fixerdt[0] != 0 and model.fixerdt[1] != 0 and model.fixerdt[2] != 0 and model.fixerdt[3] == 1:
+        USDUAH = model.fixerdt[0]
+        EURUAH = model.fixerdt[1]
+        RUBUAH = model.fixerdt[2]
+        bot.send_message(message.chat.id, 'Курсы валют:\n' + '\nUSD/UAH: ' + USDUAH + '\nEUR/UAH: ' + EURUAH+ '\nRUB/UAH: ' + RUBUAH)
+    elif model.fixerdt[3] == 0:
+        f01 = 1
+        urleur_d = requests.get('http://data.fixer.io/api/latest?access_key=9bf1e25b1208f9a4c153142e023a3710&format=1')
+        eur_d = urleur_d.json()['rates']['UAH']
+        usd_d = urleur_d.json()['rates']['USD']
+        rub_d = urleur_d.json()['rates']['RUB']
+        usd_c_d = float(eur_d)/float(usd_d)
+        rub_c_d = float(eur_d)/float(rub_d)
+        usd = round(float(usd_c_d), 2)
+        eur = round(float(eur_d), 2)
+        rub = round(float(rub_c_d), 2)
+        model.fixerdt[0] = str(usd)
+        model.fixerdt[1] = str(eur)
+        model.fixerdt[2] = str(rub)
+        USDUAH = model.fixerdt[0]
+        EURUAH = model.fixerdt[1]
+        RUBUAH = model.fixerdt[2]
+        bot.send_message(message.chat.id, 'Курсы валют:\n' + '\nUSD/UAH: ' + USDUAH + '\nEUR/UAH: ' + EURUAH+ '\nRUB/UAH: ' + RUBUAH)
+        model.fixerdt[3] = f01
+    elif fdfmfy != model.now_massiv:
+        urleur_d = requests.get('http://data.fixer.io/api/latest?access_key=9bf1e25b1208f9a4c153142e023a3710&format=1')
+        eur_d = urleur_d.json()['rates']['UAH']
+        usd_d = urleur_d.json()['rates']['USD']
+        rub_d = urleur_d.json()['rates']['RUB']
+        usd_c_d = float(eur_d)/float(usd_d)
+        rub_c_d = float(eur_d)/float(rub_d)
+        usd = round(float(usd_c_d), 2)
+        eur = round(float(eur_d), 2)
+        rub = round(float(rub_c_d), 2)
+        model.fixerdt[0] = str(usd)
+        model.fixerdt[1] = str(eur)
+        model.fixerdt[2] = str(rub)
+        USDUAH = model.fixerdt[0]
+        EURUAH = model.fixerdt[1]
+        RUBUAH = model.fixerdt[2]
+        bot.send_message(message.chat.id, 'Курсы валют:\n' + '\nUSD/UAH: ' + USDUAH + '\nEUR/UAH: ' + EURUAH+ '\nRUB/UAH: ' + RUBUAH)
+        model.now_massiv[0] = fd
+        model.now_massiv[1] = fm
+        model.now_massiv[2] = fy
 
 @bot.message_handler(commands=['binary'])
 def conv_to_binary(message: Message):
-    msgchid = message.chat.id
     #print('Перевод в двоичную систему счисления.') #выдача в консоль
     bot.send_message(message.chat.id, 'Введите натуральное число:')   
     bot.register_next_step_handler(message, converter)
@@ -146,7 +200,9 @@ def converter(message: Message):
 @bot.message_handler(commands=['info_naturalis'])
 def info_naturalis(message: Message):
     bot.send_message(message.chat.id, 'Натуральные числа — числа, возникающие естественным образом при счёте. Последовательность всех натуральных чисел, расположенных в порядке возрастания, называется натуральным рядом. ')
-
+    #сасать реал ыыы
+    #сасать реал ыыы
+    #сасать реал ыыы
 
 @bot.message_handler(commands=['getin'])
 def getinchat(message: Message):
@@ -219,7 +275,6 @@ def unblock(message: Message):
                 break
     else:
         bot.reply_to(message, 'Не советую использовать эту функцию в публичном чате.')
-
 @bot.message_handler(commands=['send'])
 def sendMess(message: Message):
     if message.chat.type == 'private':
@@ -337,8 +392,8 @@ def kpop(message: Message):
         t2 = t1.split(' ')
         for word in t2:
             if str(word) in model.kpopdata:
-                print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
-                print('Сообщение юзера:', t1) #выдача в консоль
+                #print('@', message.from_user.username, '- в сообщении юзера обнаружено упоминание к-поп.', 'Тип чата:', message.chat.type) #выдача в консоль
+                #print('Сообщение юзера:', t1) #выдача в консоль
                 bot.send_message(message.chat.id, model.kpopans[rn]) 
                 break
         if str(message.from_user.username) == 'emilichkaaaaaa':
@@ -353,7 +408,7 @@ def kpop_sticker(message: Message):
         STICKER_ID = [message.sticker.file_id] #id стикера который к нам приходит 
         for word in STICKER_ID:
             if str(word) in model.kpopstdata:
-                print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
+                #print('@', message.from_user.username, '- в сообщении юзера обнаружен неправедный стикер.', 'Тип чата:', message.chat.type) #выдача в консоль
                 bot.send_message(message.chat.id, 'Стикер на к-поп тему... Убейте меня!')
                 break    
 
