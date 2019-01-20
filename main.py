@@ -28,17 +28,20 @@ class Model(): # класс в котором храннятся все данн
     pubg_site = BeautifulSoup(requests.get('https://steamcharts.com/app/578080').text, features="html.parser").find_all('span', class_='num')[0].contents[0]
     btcusd = getJsonVal('https://api.coindesk.com/v1/bpi/currentprice.json', ('bpi', 'USD', 'rate'))
     msg = mclass.MessWork('Usrs')
-    kpopdata = ['KPOP', 'кпопу', 'К-поп', 'к-поп', 'кпоп', 'k-pop', 'K-pop', 'КПОП', 'К-ПОП', 'Кпоп', 'BTS', 'BTs', 'bTS', 'bts', 'b.t.s', 'Ким Намджун', 'Намджун', 'корейский поп', 'к.п.о.п', 'Ким Техен', 'Ким Техён', 'Техен', 'кпоа', 'кпоп']
+    kpopdata = ['KPOP', 'кпопу', 'К-поп', 'к-поп', 'кпоп', 'k-pop', 'K-pop', 'КПОП', 'К-ПОП', 'Кпоп', 'BTS', 'BTs', 'bTS', 'bts', 'b.t.s', 'Ким Намджун', 'Намджун', 'корейский поп', 'к.п.о.п', 'Ким Техен', 'Ким Техён', 'Техен', 'кпоа', 'кпопер', 'Bts', 'бтс', 'Бтс', 'БТС']
     kpopFille = open('k-pop.txt', 'r', encoding='utf-8')
     kpopans = kpopFille.readlines()
     kpopFille.close()
     kpopstdata = []
     kpopchats_blacklist = []
-    all_chats_id = []
+    all_group_name = []
+    all_group_id = []
+    all_group_type = []
     emili_trig = [2, 4, 8]
     now = datetime.now()
     now_massiv = [now.day, now.month, now.year]
-    fixerdt = [0, 0, 0, 0]    
+    fixerdt = [0, 0, 0, 0]
+    smtgmcid = [0]    
     with open('kpop_sticker_id.txt') as f:
         kpopstdata = f.read().splitlines()
     def updatesoap(self): # метод который обновляет количество игроков
@@ -48,7 +51,7 @@ class Model(): # класс в котором храннятся все данн
     def updbtc(self):
         self.btcusd = getJsonVal('https://api.coindesk.com/v1/bpi/currentprice.json', ('bpi', 'USD', 'rate'))
     def getAmountBTC(self):
-        return self.btcusd
+        return self.btcusd  
     def sendTo(self, cmsg):
         for usr in self.msg.Users:
             if usr.name == cmsg.To:
@@ -78,6 +81,15 @@ def start(message: Message):
     startru1 = startru.readline()
     bot.send_message(message.chat.id, startru1)
     startru.close()
+    mcid = message.chat.id
+    mctype = message.chat.type
+    if mctype == 'group' or mctype == 'supergroup':
+        if mcid not in model.all_group_id:
+            model.all_group_id.append(message.chat.id)
+            model.all_group_name.append(message.chat.title)
+            model.all_group_type.append(message.chat.type)
+        else:
+            pass   
 
 @bot.message_handler(commands=['help'])
 def c_help(message: Message):
@@ -94,8 +106,16 @@ def c_help(message: Message):
     '/pubg - Текущий онлайн в ПУБГ\n'
     '/rates - Курсы валют\n'
     '/btc - Курс Bitcoin\n'
-    '/binary - Перевод чисел из десятичной системы счисления в двоичную.')       
-
+    '/binary - Перевод чисел из десятичной системы счисления в двоичную.')
+    mcid = message.chat.id
+    mctype = message.chat.type
+    if mctype == 'group' or mctype == 'supergroup':
+        if mcid not in model.all_group_id:
+            model.all_group_id.append(message.chat.id)
+            model.all_group_name.append(message.chat.title)
+            model.all_group_type.append(message.chat.type)
+        else:
+            pass   
 
 @bot.message_handler(commands=['fact'])
 def fact(message: Message):
@@ -103,30 +123,66 @@ def fact(message: Message):
     FACT = soup_f.find(class_="text").contents[0].contents[0].contents[0]
     #print('Факт: ', FACT) #выдача в консоль
     bot.send_message(message.chat.id, FACT)
+    mcid = message.chat.id
+    mctype = message.chat.type
+    if mctype == 'group' or mctype == 'supergroup':
+        if mcid not in model.all_group_id:
+            model.all_group_id.append(message.chat.id)
+            model.all_group_name.append(message.chat.title)
+            model.all_group_type.append(message.chat.type)
+        else:
+            pass   
 @bot.message_handler(commands=['joke'])
 def joke(message: Message):
     soup = BeautifulSoup(requests.get('https://randstuff.ru/joke/').text, features="html.parser")
     JOKE = soup.find(class_="text").contents[0].contents[0].contents[0]
     #print('Шутка: ', JOKE) #выдача в консоль
     bot.send_message(message.chat.id, JOKE)
+    mcid = message.chat.id
+    mctype = message.chat.type
+    if mctype == 'group' or mctype == 'supergroup':
+        if mcid not in model.all_group_id:
+            model.all_group_id.append(message.chat.id)
+            model.all_group_name.append(message.chat.title)
+            model.all_group_type.append(message.chat.type)
+        else:
+            pass   
 
 @bot.message_handler(commands=['pubg'])
 def pubg(message: Message):
     PUBG = model.getAmount()
     #print('Текущий онлайн в PUBG: ', PUBG) #выдача в консоль
     bot.send_message(message.chat.id,'Текущий онлайн в PUBG: ' + PUBG)
+    mcid = message.chat.id
+    mctype = message.chat.type
+    if mctype == 'group' or mctype == 'supergroup':
+        if mcid not in model.all_group_id:
+            model.all_group_id.append(message.chat.id)
+            model.all_group_name.append(message.chat.title)
+            model.all_group_type.append(message.chat.type)
+        else:
+            pass   
 
 @bot.message_handler(commands=['btc'])
 def btc(message: Message):
     BTC = model.getAmountBTC()
     #print('Курс битка: ', BTC, ' $') #выдача в консоль
-    bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $') 
+    bot.send_message(message.chat.id, 'BTC/USD: ' + BTC + ' $')
+    mcid = message.chat.id
+    mctype = message.chat.type
+    if mctype == 'group' or mctype == 'supergroup':
+        if mcid not in model.all_group_id:
+            model.all_group_id.append(message.chat.id)
+            model.all_group_name.append(message.chat.title)
+            model.all_group_type.append(message.chat.type)
+        else:
+            pass   
 @bot.message_handler(commands=['rates'])
-def rates(message: Message):
-    #такое ебанутое разветление дальше обусловлено тем, что курсі валют особо не меняются в течении одного дня
+def fixer_rates(message: Message):
+    #такое ебанутое разветление дальше обусловлено тем, что курсы валют особо не меняются в течении одного дня
     #также API данного сервиса по фри тарифу дает только 1000 запросов в месяц
     #если бот запущен на тесте, не используйте эту функцию просто так
-    #рассчитано на то, что бот будет наботать 24/7 и обновлять инфу о курсах валют только раз в сутки 
+    #рассчитано на то, что бот будет работать 24/7 и обновлять инфу о курсах валют только раз в сутки 
     local_f_time=datetime.now() 
     fd=local_f_time.day 
     fm=local_f_time.month 
@@ -190,7 +246,7 @@ def converter(message: Message):
         while conv > 0:
             y = str(conv % 2)
             result = y + result
-            x = int(conv / 2)    
+            conv = int(conv / 2)    
         #print('10ССЧ:', int(conv_data), ' - 2ССЧ:', result)
         bot.send_message(message.chat.id, 'Число ' + conv_data + ' в двоичной системе счисления: ' + result)
     else:
@@ -203,6 +259,8 @@ def info_naturalis(message: Message):
     #сасать реал ыыы
     #сасать реал ыыы
     #сасать реал ыыы
+
+    
 
 @bot.message_handler(commands=['getin'])
 def getinchat(message: Message):
@@ -341,11 +399,51 @@ def notif(message: Message):
     if str(message.from_user.username) == 'koz9va' or str(message.from_user.username) == 'r4mpagelowe':
         msg = bot.reply_to(message, 'Text of notification for all users:')
         bot.register_next_step_handler(msg, notify)
+    else:
+        bot.reply_to(message, 'У вас отсутствуют достаточные полномочия для использования этой функции.')   
 def notify(message):
     for user in model.msg.Users:
         bot.send_message(user.chatId, message.text)
 
+#Вывод chat_id групп и супергрупп в которых работает бот
+@bot.message_handler(commands=['groups_cid'])
+def groups_cid(message: Message):
+    if str(message.from_user.username) == 'koz9va' or str(message.from_user.username) == 'r4mpagelowe':
+        gcid = len(model.all_group_id)
+        from beautifultable import BeautifulTable
+        table = BeautifulTable()
+        table.column_headers = ['Chat_name', 'Chat_id', 'Chat_type']
+        for a in range(gcid):    
+            table.append_row([model.all_group_name[a], model.all_group_id[a], model.all_group_type[a]])
+            a = a + 1
+        print(table)
+        table_text = str(table)
+        bot.reply_to(message, table_text)        
+    else:
+        bot.reply_to(message, 'У вас отсутствуют достаточные полномочия для использования этой функции.') 
 
+#отправка сообщения в конкретный чат
+@bot.message_handler(commands=['send_to_group'])
+def sendMessToGroup(message: Message):
+    if str(message.from_user.username) == 'koz9va' or str(message.from_user.username) == 'r4mpagelowe':
+        if message.chat.type == 'private':
+            bot.send_message(message.chat.id, 'Введите Chat_id:')
+            bot.register_next_step_handler(message, smtg)
+        else:
+            bot.reply_to(message, 'Мой господин, для использования этой функции напишите мне в лс.')            
+    else:
+        bot.reply_to(message, 'У вас отсутствуют достаточные полномочия для использования этой функции.')         
+def smtg(message: Message):
+    model.smtgmcid[0] = str(message.text)
+    bot.send_message(message.chat.id, 'Отлично. Теперь напишите то, что хотели бы отправить:')
+    bot.register_next_step_handler(message, smtg1)
+def smtg1(message: Message):
+    msgtxt = message.text
+    mcid = model.smtgmcid[0]
+    bot.send_message(message.chat.id, 'Сообщение успешно отправлено!')
+    bot.send_message(mcid, msgtxt)
+
+#старт-стоп
 @bot.message_handler(commands=['start_kpop'])
 def start_kpop(message: Message):
     if message.chat.id in model.kpopchats_blacklist:
@@ -356,6 +454,54 @@ def stop_kpop(message: Message):
     if message.chat.id not in model.kpopchats_blacklist:
         model.kpopchats_blacklist.append(message.chat.id)
         bot.send_message(message.chat.id, 'Слежение за IQ остановлено!')
+
+#регулярное пиветствие в 10 утра в группах и супергруппах.
+def morning10():
+    local_m_time=datetime.now() 
+    mh=local_m_time.hour 
+    mm=local_m_time.minute  
+    mhmm = [mh, mm]
+    #print(mhmm)
+    #print(model.all_group_id)
+    for word in model.all_group_id:
+        mcid = str(word)
+        if mhmm[0] == 10 and mhmm[1] == 0:
+            bot.send_message(mcid, 'ЧЕ СПИМ БЛЯТЬ, ПЕТУШАРЫ?! 10-00! Подъем, славяне!') 
+        elif mhmm[0] == 0 and mhmm[1] == 0:
+            bot.send_message(mcid, 'Пиздуйте спать, славяне, заебали уже!')
+    threading.Timer(30, morning10).start()
+
+morning10()
+
+#вызов всех доступных команд с проверкой на разраба
+@bot.message_handler(commands=['cmd'])
+def cmd(message: Message):
+    if message.chat.type == 'private':
+        if str(message.from_user.username) == 'koz9va' or str(message.from_user.username) == 'r4mpagelowe':
+            bot.send_message(message.chat.id, 'Список команд для всех пользователей:\n'
+    '/start - Приветсвие\n'
+    '/help - Помощь\n'
+    '/getin - Регистрация для приема/отправки анонимных сообщений\n'
+    '/send - Отправка анонимных сообщений\n'
+    '/reply - Команда для ответа на анонимное сообщение\n'
+    '/block - Команда для блокировки анонимного отправителя\n'
+    '/joke - Dolbobot пошутит\n'
+    '/fact - Dolbobot поделится фактом\n'
+    '/pubg - Текущий онлайн в ПУБГ\n'
+    '/rates - Курсы валют\n'
+    '/btc - Курс Bitcoin\n'
+    '/binary - Перевод чисел из десятичной системы счисления в двоичную.\n'
+    '\nСписок команд доступных только разработчикам:\n'
+    '/cmd - собственно, получение этого списка\n'
+    '/stop_kpop - остановка слежения за IQ\n'
+    '/start_kpop - восстановление слежения за IQ\n'
+    '/notify - сообщение всем юзерам, которые есть в базе\n'
+    '/groups_cid - таблица чатов в которых работает бот в текущей сессии\n'
+    '/send_to_group - отправка сообщения в конкретный чат')
+        else:
+            bot.reply_to(message, 'У вас отсутствуют достаточные полномочия для получения этой информации.')
+    else:
+        pass
 
 """
 Парсер Стикеров:
@@ -385,7 +531,7 @@ def all_chats_id(message: Message):
 """
 @bot.message_handler(content_types=['text'])
 @bot.edited_message_handler(content_types=['text'])
-def kpop(message: Message):
+def message_handler(message: Message):
     if message.chat.id not in model.kpopchats_blacklist:
         rn = random.randint(0, 8) #генерим номер строки
         t1 = message.text
@@ -399,11 +545,26 @@ def kpop(message: Message):
         if str(message.from_user.username) == 'emilichkaaaaaa':
             emili = random.randint(0, 9)
             em = random.randint(10, 13) #генерим номер строки
-            if emili in emili_trig:
+            if emili in model.emili_trig:
                 bot.reply_to(message, model.kpopans[em])       
+    if message.text == 'Бот, спс' or message.text == 'Бот, спасибо' or message.text == 'Долбобот, спс' or message.text == 'Долбобот, спасибо':
+        Tsanks_massiv = ['Всегда рад помочь!', 'Рад что пригодился!', 'Обращайтесь!', 'Спасибо в карман не положешь)', 'Я просто делаю свою работу)']
+        rnd = random.randint(0, 4)
+        bot.reply_to(message, Tsanks_massiv[rnd]) 
+    if message.text == 'Бот, подбрось монетку' or message.text == 'Бот, орел или решка':
+        monetka = random.randint(0, 10)
+        orel = [1, 3, 5, 7, 9]
+        reshka = [2, 4, 6, 8, 10]
+        if monetka in orel:
+            bot.reply_to(message, 'Выпал орел!')
+        elif monetka in reshka:
+            bot.reply_to(message, 'Выпала решка!')
+        else:
+            bot.reply_to(message, 'Хмм... Монетка приземлилась на ребро...')                                    
+
 
 @bot.message_handler(content_types=['sticker'])    
-def kpop_sticker(message: Message):
+def sticker_handler(message: Message):
     if message.chat.id not in model.kpopchats_blacklist:
         STICKER_ID = [message.sticker.file_id] #id стикера который к нам приходит 
         for word in STICKER_ID:
@@ -417,7 +578,7 @@ def kpop_sticker(message: Message):
 def callbacks():
     model.updatesoap()# функция которая вызывется раз в пять минут в которая запускает все остальные функции
     model.updbtc()
-    model.msg.save()
+    model.msg.save()   
 
 def timers():
     for usr in range(0,len(model.msg.TooUsers)-1):
